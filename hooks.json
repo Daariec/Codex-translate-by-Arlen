@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const p=require('path'),os=require('os'),fs=require('fs'),cp=require('child_process');const ch=process.env.CODEX_HOME||p.join(os.homedir(),'.codex');let src=null;try{const bs=String.fromCharCode(92),dq=String.fromCharCode(34),lf=String.fromCharCode(10);const cfg=fs.readFileSync(p.join(ch,'config.toml'),'utf8');const sec=(cfg.split('[marketplaces.codex-translate-local]')[1]||'').split('[')[0];for(const raw of sec.split(lf)){const l=raw.trim();if(l.startsWith('source')){const eq=l.indexOf('=');if(eq>0){let v=l.slice(eq+1).trim();if((v.startsWith(dq)&&v.endsWith(dq))||(v.startsWith(String.fromCharCode(39))&&v.endsWith(String.fromCharCode(39))))v=v.slice(1,-1);src=p.join(v.split(bs+bs).join(bs),'cli.mjs');}}}}catch{}const c=[p.join(ch,'plugins/cache/codex-translate-local/codex-translate/1.0.0/cli.mjs'),src,fs.existsSync(p.resolve('.codex-plugin/plugin.json'))?p.resolve('cli.mjs'):null].filter(Boolean).find(x=>fs.existsSync(x));if(c)cp.spawnSync(process.execPath,[c,'startup','--json'],{stdio:'ignore',windowsHide:true});\""
+          }
+        ]
+      }
+    ]
+  }
+}

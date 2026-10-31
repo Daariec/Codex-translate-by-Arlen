@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Codex Translate — Translator Control Panel</title>
+  <link rel="icon" type="image/svg+xml" href="/icon.svg">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <aside>
+    <div class="brand"><span class="mark">⇄</span> Codex Translate</div>
+    <div class="ui-lang-box">
+      <span class="section-label" data-i18n="side.uiLangLabel" style="margin:0 0 6px 0;">Interface Language</span>
+      <div class="ui-lang-tabs" role="group" aria-label="Interface Language" data-i18n-aria-label="side.uiLangLabel">
+        <button type="button" data-ui-lang="en" class="ui-lang-btn active">English</button>
+        <button type="button" data-ui-lang="ru" class="ui-lang-btn">Русский</button>
+        <button type="button" data-ui-lang="zh" class="ui-lang-btn">中文</button>
+      </div>
+    </div>
+    <div class="route-box">
+      <div class="section-label" data-i18n="side.statusLabel">Translator (User ↔ Agent)</div>
+      <div id="translator-pill" class="route-pill">Loading…</div>
+      <div class="route-actions">
+        <button id="btn-translator-on" class="route-btn" data-i18n="side.turnOn">ON</button>
+        <button id="btn-translator-off" class="route-btn" data-i18n="side.turnOff">OFF</button>
+      </div>
+      <button id="btn-restart-desktop" class="secondary full-width" data-i18n="side.restartDesktop">↻ Restart ChatGPT / Codex</button>
+    </div>
+    <div class="section-label" data-i18n="side.sectionsLabel">Translator Sections</div>
+    <nav>
+      <button data-tab="dashboard" class="nav active"><span data-i18n="nav.translator">Translator (ON/OFF)</span> <span id="translator-nav-state"></span></button>
+      <button data-tab="economics" class="nav"><span data-i18n="nav.economics">Token Economics</span> <span id="economics-nav-saved"></span></button>
+      <button data-tab="connections" class="nav"><span data-i18n="nav.connections">API Providers</span> <span id="connection-count"></span></button>
+      <button data-tab="models" class="nav"><span data-i18n="nav.models">Translator Models</span> <span id="model-count"></span></button>
+    </nav>
+    <div class="sidebar-note" data-i18n="side.note">
+      Base ChatGPT &amp; Codex models are preserved.<br>
+      User → EN → Agent → Your language.<br>
+      API keys encrypted via Windows DPAPI.
+    </div>
+  </aside>
+
+  <main>
+    <header>
+      <div>
+        <h1 id="title">Intermediary Translator (User ↔ Agent)</h1>
+        <p id="subtitle">Intercepts and translates your prompts into English for the Agent and translates the Agent's responses back into your language to save tokens and quota.</p>
+      </div>
+      <span id="save-status" role="status">Loading…</span>
+    </header>
+
+    <section id="dashboard" class="panel">
+      <div class="dash-grid">
+        <div class="editor translator-card">
+          <div class="editor-heading">
+            <h2 data-i18n="dash.settingsHeader">1. Translator Control (ON / OFF) &amp; Settings</h2>
+            <span id="translator-status-badge" class="badge">Loading…</span>
+          </div>
+          <p class="muted" data-i18n="dash.subtitle" style="margin-top:0;margin-bottom:14px;">
+            When the translator is <strong>ON</strong>, all user messages in <strong>ChatGPT</strong> and <strong>Codex</strong> modes are intercepted, translated into English, and sent to the Agent. When the Agent replies, the translator intercepts the response and translates it back into your language.
+          </p>
+
+          <div class="button-row" style="margin-bottom:16px;">
+            <button id="dash-enable-translator" class="primary" data-i18n="dash.btnEnable">Turn Translator ON</button>
+            <button id="dash-disable-translator" class="secondary" data-i18n="dash.btnDisable">Turn Translator OFF</button>
+          </div>
+
+          <div class="translator-toggles">
+            <label class="agent-toggle wide-toggle">
+              <span data-i18n="dash.enableToggle">Enable User ↔ Agent intermediary translator (ON / OFF)</span>
+              <input id="translator-enabled" class="switch" type="checkbox">
+            </label>
+            <label class="agent-toggle wide-toggle">
+              <span data-i18n="dash.autoLangToggle">Automatically translate replies into the user's request language (Priority #1)</span>
+              <input id="translator-auto-language" class="switch" type="checkbox" checked>
+            </label>
+            <label class="agent-toggle wide-toggle">
+              <span data-i18n="dash.showIndicatorsToggle">Show translation confirmation indicator in chat (🌐 User → EN &amp; Reply EN → Your language)</span>
+              <input id="translator-show-indicators" class="switch" type="checkbox" checked>
+            </label>
+          </div>
+
+          <div class="translator-grid">
+            <label><span data-i18n="dash.translatorModelLabel">Translator Model (from connected API providers)</span>
+              <input id="translator-model-search" type="search" data-i18n-placeholder="dash.searchModelPlaceholder" placeholder="Quick filter translator models…">
+              <select id="translator-model" aria-label="Translator Model" data-i18n-aria-label="dash.translatorModelLabel"></select>
+            </label>
+            <label><span data-i18n="dash.fallbackLangLabel">Target Reply Language (Priority #2 · fallback language)</span>
+              <input id="translator-language-search" type="search" data-i18n-placeholder="dash.searchLangPlaceholder" placeholder="Search language (English, Русский, 中文, Deutsch, Español…)">
+              <select id="translator-language" aria-label="Target Reply Language" data-i18n-aria-label="dash.fallbackLangLabel"></select>
+            </label>
+            <div class="translator-col-stack">
+              <label><span data-i18n="dash.effortLabel">Translator Reasoning Effort</span>
+                <select id="translator-effort" aria-label="Translator Effort" data-i18n-aria-label="dash.effortLabel"></select>
+              </label>
+              <label><span data-i18n="dash.customPromptLabel">Custom Translator Instructions (terminology &amp; style)</span>
+                <textarea id="translator-instructions" rows="1" data-i18n-placeholder="dash.customPromptPlaceholder" placeholder="E.g.: Preserve technical terms and module names untranslated…"></textarea>
+              </label>
+            </div>
+          </div>
+
+          <div id="translator-live-box" class="translator-live-box">
+            <div class="translator-live-head">
+              <strong data-i18n="dash.liveActivity">Live Translation Health Tracker (User → EN → Agent → Your Language)</strong>
+              <span id="translator-live-pill" class="route-pill">Waiting…</span>
+            </div>
+            <div id="translator-recent-list" class="translator-recent-list"></div>
+          </div>
+
+          <div class="button-row">
+            <button id="dash-apply-translator" class="primary" data-i18n="dash.btnSaveSettings">Save Translator Settings</button>
+            <button id="dash-test-translator" class="secondary" data-i18n="dash.btnTestTranslation">⚡ Test Translation (Probe Model)</button>
+          </div>
+          <p id="dash-probe-result" class="muted" style="margin-top:10px;margin-bottom:0;"></p>
+        </div>
+
+        <div class="editor translator-card">
+          <div class="editor-heading">
+            <h2 data-i18n="dash.pluginHeader">2. ChatGPT / Codex Interception Bridge &amp; Statistics</h2>
+            <span id="dash-plugin-badge" class="badge">Checking…</span>
+          </div>
+          <div class="stat-list">
+            <div class="stat-row"><span data-i18n="dash.statTranslator">Translator Status (ON/OFF):</span><strong id="stat-translator">—</strong></div>
+            <div class="stat-row"><span data-i18n="dash.statIntercept">Interception Bridge (`openai_base_url`):</span><strong id="stat-intercept">—</strong></div>
+            <div class="stat-row"><span data-i18n="dash.statGateway">Local Translator Gateway:</span><strong id="stat-gateway-port">—</strong></div>
+            <div class="stat-row"><span data-i18n="dash.statTranslated">Translated Messages (User / Agent):</span><strong id="stat-translated-counts">—</strong></div>
+            <div class="stat-row"><span data-i18n="dash.statEconomics">Token &amp; Budget Savings (BPE + Cache):</span><strong id="stat-economics-summary">—</strong></div>
+          </div>
+          <div class="button-row" style="margin-top:16px;">
+            <button id="dash-install-plugin" class="primary" data-i18n="dash.btnInstall">Install / Enable Interception in ChatGPT &amp; Codex</button>
+            <button id="dash-disable-plugin" class="secondary" data-i18n="dash.btnDirect">Disable Interception (Direct Connection)</button>
+            <button id="dash-start-tray" class="secondary" data-i18n="dash.btnTray">Launch System Tray Icon (CT)</button>
+            <button id="dash-open-economics" class="secondary" data-i18n="dash.btnOpenEcon">📊 Open Token Economics Dashboard</button>
+          </div>
+          <p id="translator-hint" class="muted" data-i18n="dash.hint" style="margin-top:12px;margin-bottom:0;">
+            Markdown tables, code blocks, file paths, URLs, and identifiers are protected with cryptographic markers (`__CT_...__`). Images and file attachments are forwarded directly to the Agent without being sent to the translator.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="economics" class="panel hidden">
+      <div class="dash-grid">
+        <div class="econ-model-banner">
+          <div class="econ-model-banner-left">
+            <span class="econ-kpi-label" data-i18n="econ.activeModelLabel">Active model in ChatGPT / Codex (auto-sync)</span>
+            <div class="econ-model-banner-title">
+              <strong id="econ-active-codex-model">gpt-6.1-sol</strong>
+              <span id="econ-active-codex-meta" class="route-pill omni">Auto-detection active</span>
+              <span id="econ-active-tariff-pill" class="badge">In: $2.50 · Cache: $0.25 (-90%) · Out: $10.00 / 1M</span>
+            </div>
+          </div>
+          <div class="econ-model-banner-right">
+            <div class="econ-period-tabs" role="tablist" aria-label="Statistics period" data-i18n-aria-label="a11y.period">
+              <button type="button" data-econ-period="today" data-i18n="econ.period.today" class="econ-period-btn">Today</button>
+              <button type="button" data-econ-period="week" data-i18n="econ.period.week" class="econ-period-btn">Week</button>
+              <button type="button" data-econ-period="month" data-i18n="econ.period.month" class="econ-period-btn">Month</button>
+              <button type="button" data-econ-period="all" data-i18n="econ.period.all" class="econ-period-btn active">All Time</button>
+            </div>
+            <label class="agent-toggle wide-toggle" style="margin:0;padding:8px 12px;">
+              <span data-i18n="econ.autoTariff">Auto-tariff from ChatGPT / Codex</span>
+              <input id="econ-auto-detect-model" class="switch" type="checkbox" checked>
+            </label>
+          </div>
+        </div>
+
+        <!-- Block A: Primary Hero KPI Cards (Real Benefit, Actual Tokens Spent, Money Spent/Saved, Cache Dynamics) -->
+        <div class="econ-kpi-grid">
+          <div class="econ-kpi-card highlight-green">
+            <span class="econ-kpi-label" data-i18n="econ.kpi.netSaved">🎯 Real Translator Benefit (Net Saved)</span>
+            <div class="econ-kpi-value-row">
+              <strong id="econ-kpi-saved-usd" class="econ-kpi-value green">$0.0000</strong>
+              <span id="econ-kpi-saved-pct" class="route-pill omni">0.0%</span>
+            </div>
+            <span id="econ-kpi-saved-sub" class="econ-kpi-sub">Without translator: $0.0000 → With translator: $0.0000</span>
+            <span id="econ-kpi-nocache-benefit" class="econ-kpi-sub">Translator benefit without cache: +$0.0000</span>
+          </div>
+
+          <div class="econ-kpi-card">
+            <span class="econ-kpi-label" data-i18n="econ.kpi.tokensSpentSaved">🪙 Tokens Spent &amp; Saved</span>
+            <div class="econ-kpi-value-row">
+              <strong id="econ-kpi-saved-tokens" class="econ-kpi-value green">0</strong>
+              <span id="econ-kpi-turns-badge" class="badge">Turns: 0</span>
+            </div>
+            <span id="econ-kpi-actual-tokens" class="econ-kpi-sub">Actual spent: 0 tok. (without translator: 0 tok.)</span>
+            <span id="econ-kpi-saved-tokens-sub" class="econ-kpi-sub">Saved: In 0 · Out 0</span>
+          </div>
+
+          <div class="econ-kpi-card">
+            <span class="econ-kpi-label" data-i18n="econ.kpi.totalSpent">💵 Actual Cost in Money (Total Spent $)</span>
+            <div class="econ-kpi-value-row">
+              <strong id="econ-kpi-spent" class="econ-kpi-value">$0.0000</strong>
+              <span id="econ-kpi-virtual" class="badge">Without plugin: $0.0000</span>
+            </div>
+            <span id="econ-kpi-spent-sub" class="econ-kpi-sub">Model: $0.0000 + Translator: $0.0000</span>
+            <span id="econ-kpi-raw-baseline-sub" class="econ-kpi-sub">Raw baseline without translation &amp; cache: $0.0000</span>
+          </div>
+
+          <div class="econ-kpi-card">
+            <span class="econ-kpi-label" data-i18n="econ.kpi.cacheDynamics">⚡ Prompt Cache Dynamics</span>
+            <div class="econ-kpi-value-row">
+              <strong id="econ-kpi-cache-rate" class="econ-kpi-value">0.0%</strong>
+              <span id="econ-kpi-cache-usd" class="route-pill omni">Cache saved: $0.0000</span>
+            </div>
+            <span id="econ-kpi-cache-sub" class="econ-kpi-sub">Cached: 0 / 0 input tokens</span>
+            <span id="econ-kpi-cache-nat-sub" class="econ-kpi-sub">New uncached input: 0 tok.</span>
+          </div>
+        </div>
+
+        <!-- Block B: Period Comparison Strip (Today vs Week vs Month) -->
+        <div class="econ-period-cards-grid">
+          <div id="econ-pcard-today" class="econ-period-card" data-select-period="today">
+            <div class="econ-period-card-head">
+              <strong data-i18n="econ.pcard.today">📅 Today</strong>
+              <span id="p-today-turns" class="badge">0 turns</span>
+            </div>
+            <div class="econ-period-card-rows">
+              <div class="econ-s-row"><span data-i18n="econ.pcard.tokensSpent">Tokens spent (Actual):</span><strong id="p-today-tokens">0 tok.</strong></div>
+              <div class="econ-s-row"><span data-i18n="econ.pcard.moneySpent">Money spent (Actual):</span><strong id="p-today-spent">$0.0000</strong></div>
+              <div class="econ-s-row"><span data-i18n="econ.pcard.cacheDyn">Cache dynamics (Hit % / $):</span><strong id="p-today-cache">0.0% (saved $0.0000)</strong></div>
+              <div class="econ-s-row total"><span data-i18n="econ.pcard.benefit">Translator benefit:</span><strong id="p-today-saved" class="econ-pos">+0 tok. · +$0.0000</strong></div>
+            </div>
+          </div>
+
+          <div id="econ-pcard-week" class="econ-period-card" data-select-period="week">
+            <div class="econ-period-card-head">
+              <strong data-i18n="econ.pcard.week">📆 Past 7 Days (Week)</strong>
+              <span id="p-week-turns" class="badge">0 turns</span>
+            </div>
+            <div class="econ-period-card-rows">
+              <div class="econ-s-row"><span data-i18n="econ.pcard.tokensSpent">Tokens spent (Actual):</span><strong id="p-week-tokens">0 tok.</strong></div>
+              <div class="econ-s-row"><span data-i18n="econ.pcard.moneySpent">Money spent (Actual):</span><strong id="p-week-spent">$0.0000</strong></div>
+              <div class="econ-s-row"><span data-i18n="econ.pcard.cacheDyn">Cache dynamics (Hit % / $):</span><strong id="p-week-cache">0.0% (saved $0.0000)</strong></div>
+              <div class="econ-s-row total"><span data-i18n="econ.pcard.benefit">Translator benefit:</span><strong id="p-week-saved" class="econ-pos">+0 tok. · +$0.0000</strong></div>
+            </div>
+          </div>
+
+          <div id="econ-pcard-month" class="econ-period-card" data-select-period="month">
+            <div class="econ-period-card-head">
+              <strong data-i18n="econ.pcard.month">🗓️ Past 30 Days (Month)</strong>
+              <span id="p-month-turns" class="badge">0 turns</span>
+            </div>
+            <div class="econ-period-card-rows">
+              <div class="econ-s-row"><span data-i18n="econ.pcard.tokensSpent">Tokens spent (Actual):</span><strong id="p-month-tokens">0 tok.</strong></div>
+              <div class="econ-s-row"><span data-i18n="econ.pcard.moneySpent">Money spent (Actual):</span><strong id="p-month-spent">$0.0000</strong></div>
+              <div class="econ-s-row"><span data-i18n="econ.pcard.cacheDyn">Cache dynamics (Hit % / $):</span><strong id="p-month-cache">0.0% (saved $0.0000)</strong></div>
+              <div class="econ-s-row total"><span data-i18n="econ.pcard.benefit">Translator benefit:</span><strong id="p-month-saved" class="econ-pos">+0 tok. · +$0.0000</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Block C: Single Unified Model Unit-Economics Table -->
+        <div class="editor translator-card econ-card">
+          <div class="editor-heading">
+            <div>
+              <h2 data-i18n="econ.table.title">Unified Unit-Economics &amp; Dynamics Table by Model</h2>
+              <p id="econ-by-model-subtitle" class="muted" data-i18n="econ.table.subtitle" style="margin:4px 0 0 0;">
+                Actual token and money spend, prompt cache dynamics, and real translator savings broken down for each model used.
+              </p>
+            </div>
+            <span id="econ-active-period-badge" class="route-pill omni" style="margin:0;">Period: All Time</span>
+          </div>
+          <div class="econ-table-wrap" style="max-height:360px;">
+            <table id="econ-by-model-table" class="econ-table">
+              <thead>
+                <tr>
+                  <th data-i18n="econ.th.model">Model &amp; Rate ($/1M)</th>
+                  <th data-i18n="econ.th.turns">Turns</th>
+                  <th data-i18n="econ.th.actualTokens">Tokens Spent (Actual: New / Cache / Out)</th>
+                  <th data-i18n="econ.th.actualUsd">Money Spent (Actual $)</th>
+                  <th data-i18n="econ.th.cacheDyn">Cache Dynamics (Hit % · Saved $)</th>
+                  <th data-i18n="econ.th.withoutTrans">Without Translator (Tokens · $)</th>
+                  <th data-i18n="econ.th.savedTokens">Tokens Saved (Compression)</th>
+                  <th data-i18n="econ.th.netBenefit">Real Translator Benefit ($ &amp; %)</th>
+                  <th data-i18n="econ.th.totalBenefit">Total Benefit (Trans + Cache)</th>
+                </tr>
+              </thead>
+              <tbody id="econ-by-model-tbody">
+                <tr>
+                  <td colspan="9" class="empty" data-i18n="econ.table.empty">No data for the selected period.</td>
+                </tr>
+              </tbody>
+              <tfoot id="econ-by-model-tfoot"></tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="econ-charts-grid">
+          <div class="editor translator-card econ-card">
+            <div class="editor-heading">
+              <h2 data-i18n="econ.structure.title">Input Token Structure</h2>
+              <span id="econ-encoding-badge" class="badge">o200k_base</span>
+            </div>
+            <p class="muted" data-i18n="econ.structure.desc" style="margin-top:0;margin-bottom:12px;">
+              Ratio of cached input tokens (green), new English tokens (blue), and tokens eliminated by translating from your native language to English (gray dashed).
+            </p>
+            <div class="econ-stacked-bar" role="img" aria-label="Input token structure" data-i18n-aria-label="econ.structure.title">
+              <div id="econ-bar-seg-cached" class="econ-bar-seg cached" style="width: 33.3%" title="Cached tokens" data-i18n-title="econ.structure.cached"></div>
+              <div id="econ-bar-seg-uncached" class="econ-bar-seg uncached" style="width: 33.3%" title="New EN tokens" data-i18n-title="econ.structure.uncached"></div>
+              <div id="econ-bar-seg-cutoff" class="econ-bar-seg cutoff" style="width: 33.4%" title="Tokens cut off by translation" data-i18n-title="econ.structure.cutoff"></div>
+            </div>
+            <div class="econ-legend-row">
+              <div class="econ-legend-item">
+                <span class="econ-dot cached"></span>
+                <div>
+                  <strong data-i18n="econ.structure.cached">Cached Tokens (Cached EN)</strong>
+                  <small id="econ-legend-cached">0 tokens (0.0%)</small>
+                </div>
+              </div>
+              <div class="econ-legend-item">
+                <span class="econ-dot uncached"></span>
+                <div>
+                  <strong data-i18n="econ.structure.uncached">New EN Tokens (Uncached EN)</strong>
+                  <small id="econ-legend-uncached">0 tokens (0.0%)</small>
+                </div>
+              </div>
+              <div class="econ-legend-item">
+                <span class="econ-dot cutoff"></span>
+                <div>
+                  <strong data-i18n="econ.structure.cutoff">Cut Off by Translation</strong>
+                  <small id="econ-legend-cutoff">0 tokens (0.0%)</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="editor translator-card econ-card">
+            <div class="editor-heading">
+              <h2 data-i18n="econ.chart.title">Cumulative Cost Dynamics</h2>
+              <div class="econ-chart-legend-inline">
+                <span class="econ-line-tag virtual" data-i18n="econ.chart.virtual">--- Without Plugin (Native Lang)</span>
+                <span class="econ-line-tag actual" data-i18n="econ.chart.actual">─── With Plugin (EN + Cache)</span>
+              </div>
+            </div>
+            <div id="econ-chart-box" class="econ-chart-box">
+              <svg id="econ-chart-svg" viewBox="0 0 640 220" preserveAspectRatio="none" aria-label="Cumulative costs chart" data-i18n-aria-label="econ.chart.title"></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="editor translator-card econ-card">
+          <div class="editor-heading">
+            <h2 data-i18n="econ.blocks.title">Separated Scenario Blocks: No Cache vs With Cache · Without Translation vs With Translation</h2>
+            <span class="badge" data-i18n="econ.blocks.badge">All 4 Scenarios Breakdown</span>
+          </div>
+          <div class="econ-blocks-grid">
+            <!-- Block 1: Without Translation & Without Cache -->
+            <div class="econ-scenario-card">
+              <div class="econ-scenario-head">
+                <strong data-i18n="econ.b1.title">1. Without Translation · No Cache</strong>
+                <span class="badge" data-i18n="econ.nativeNoCache">Native · 0% Cache</span>
+              </div>
+              <div class="econ-scenario-rows">
+                <div class="econ-s-row"><span data-i18n="econ.b1.in">All Input (Native, full rate):</span><strong id="b1-in-tokens">0 tok. ($0.0000)</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b1.cached">Cached Input:</span><strong data-i18n="econ.zeroTokens">0 tok. ($0.0000)</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b1.out">Output (Native):</span><strong id="b1-out-tokens">0 tok. ($0.0000)</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b1.cacheSaved">Cache savings:</span><strong>$0.0000</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b1.trans">Translator cost:</span><strong>$0.0000</strong></div>
+                <div class="econ-s-row total"><span data-i18n="econ.b1.total">Cost without translation &amp; cache:</span><strong id="b1-total-usd" class="econ-neg">$0.0000</strong></div>
+              </div>
+            </div>
+
+            <!-- Block 2: Without Translation & With Cache -->
+            <div class="econ-scenario-card">
+              <div class="econ-scenario-head">
+                <strong data-i18n="econ.b2.title">2. Without Translation · With Cache</strong>
+                <span class="badge" data-i18n="econ.nativeCache">Native · Prompt Cache</span>
+              </div>
+              <div class="econ-scenario-rows">
+                <div class="econ-s-row"><span data-i18n="econ.b2.uncached">Uncached Input (Native):</span><strong id="b2-uncached-tokens">0 tok. ($0.0000)</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b2.cached">Cached Input (Native Cached):</span><strong id="b2-cached-tokens">0 tok. ($0.0000)</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b2.out">Output (Native):</span><strong id="b2-out-tokens">0 tok. ($0.0000)</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b2.cacheSaved">Cache discount (native):</span><strong id="b2-cache-saved" class="econ-pos">-$0.0000</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b2.trans">Translator cost:</span><strong>$0.0000</strong></div>
+                <div class="econ-s-row total"><span data-i18n="econ.b2.total">Cost without translation (cached):</span><strong id="b2-total-usd">$0.0000</strong></div>
+              </div>
+            </div>
+
+            <!-- Block 3: With Translation & Without Cache -->
+            <div class="econ-scenario-card">
+              <div class="econ-scenario-head">
+                <strong data-i18n="econ.b3.title">3. With Translation (EN) · No Cache</strong>
+                <span class="badge" data-i18n="econ.englishNoCache">EN · 0% Cache</span>
+              </div>
+              <div class="econ-scenario-rows">
+                <div class="econ-s-row"><span data-i18n="econ.b3.in">All Input (EN, full rate):</span><strong id="b3-in-tokens">0 tok. ($0.0000)</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b3.cached">Cached Input:</span><strong data-i18n="econ.zeroTokens">0 tok. ($0.0000)</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b3.out">Output (EN):</span><strong id="b3-out-tokens">0 tok. ($0.0000)</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b3.trans">Translator cost:</span><strong id="b3-trans-usd">$0.0000</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b3.savedVsB1">Translation-only benefit (vs Block 1):</span><strong id="b3-saved-vs-b1" class="econ-pos">+$0.0000 (0.0%)</strong></div>
+                <div class="econ-s-row total"><span data-i18n="econ.b3.total">Cost with translation (no cache):</span><strong id="b3-total-usd">$0.0000</strong></div>
+              </div>
+            </div>
+
+            <!-- Block 4: With Translation & With Cache (Actual) -->
+            <div class="econ-scenario-card active-scenario">
+              <div class="econ-scenario-head">
+                <strong data-i18n="econ.b4.title">4. With Translation (EN) · With Cache (ACTUAL)</strong>
+                <span class="route-pill omni" data-i18n="econ.b4.badge" style="margin:0;padding:3px 8px;font-size:11px;">Actual Spend</span>
+              </div>
+              <div class="econ-scenario-rows">
+                <div class="econ-s-row"><span data-i18n="econ.b4.uncached">Uncached Input (EN):</span><strong id="b4-uncached-tokens">0 tok. ($0.0000)</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b4.cached">Cached Input (EN Cached):</span><strong id="b4-cached-tokens">0 tok. ($0.0000)</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b4.out">Output (EN):</span><strong id="b4-out-tokens">0 tok. ($0.0000)</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b4.cacheSaved">Cache discount (EN Cache Saved):</span><strong id="b4-cache-saved" class="econ-pos">-$0.0000</strong></div>
+                <div class="econ-s-row"><span data-i18n="econ.b4.trans">Translator cost:</span><strong id="b4-trans-usd">$0.0000</strong></div>
+                <div class="econ-s-row total"><span data-i18n="econ.b4.total">Actual cost (EN + Cache):</span><strong id="b4-total-usd" class="econ-pos">$0.0000</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Block 5: Consolidated Final Summary Table -->
+        <div class="editor translator-card econ-card">
+          <div class="editor-heading">
+            <h2 data-i18n="econ.sum.title">Consolidated Summary: Without Translation vs With Translation</h2>
+            <span id="econ-consolidated-badge" class="route-pill omni" data-i18n="econ.sum.badge" style="margin:0;">Consolidated Balance</span>
+          </div>
+          <div class="econ-table-wrap">
+            <table class="econ-table econ-summary-table">
+              <thead>
+                <tr>
+                  <th data-i18n="econ.sum.thMetric">Metric / Cost Item</th>
+                  <th data-i18n="econ.sum.thWithout">Total WITHOUT TRANSLATION (Native)</th>
+                  <th data-i18n="econ.sum.thWith">Total WITH TRANSLATION (EN)</th>
+                  <th data-i18n="econ.sum.thDelta">Difference / Net Benefit</th>
+                </tr>
+              </thead>
+              <tbody id="econ-consolidated-tbody">
+                <tr>
+                  <td data-i18n="econ.sum.r1">1. Uncached Input Tokens</td>
+                  <td id="sum-nat-uncached">0 tok. ($0.0000)</td>
+                  <td id="sum-en-uncached">0 tok. ($0.0000)</td>
+                  <td id="sum-diff-uncached" class="econ-pos">0 tok. ($0.0000)</td>
+                </tr>
+                <tr>
+                  <td data-i18n="econ.sum.r2">2. Cached Input Tokens</td>
+                  <td id="sum-nat-cached">0 tok. ($0.0000)</td>
+                  <td id="sum-en-cached">0 tok. ($0.0000)</td>
+                  <td id="sum-diff-cached" class="econ-pos">0 tok. ($0.0000)</td>
+                </tr>
+                <tr>
+                  <td data-i18n="econ.sum.r3">3. Total Input Tokens (Uncached + Cached)</td>
+                  <td id="sum-nat-in-total">0 tok. ($0.0000)</td>
+                  <td id="sum-en-in-total">0 tok. ($0.0000)</td>
+                  <td id="sum-diff-in-total" class="econ-pos">0 tok. ($0.0000)</td>
+                </tr>
+                <tr>
+                  <td data-i18n="econ.sum.r4">4. Output Tokens</td>
+                  <td id="sum-nat-out">0 tok. ($0.0000)</td>
+                  <td id="sum-en-out">0 tok. ($0.0000)</td>
+                  <td id="sum-diff-out" class="econ-pos">0 tok. ($0.0000)</td>
+                </tr>
+                <tr>
+                  <td data-i18n="econ.sum.r5">5. Total Dialogue Tokens (Input + Output)</td>
+                  <td id="sum-nat-all-tok">0 tok.</td>
+                  <td id="sum-en-all-tok">0 tok.</td>
+                  <td id="sum-diff-all-tok" class="econ-pos">0 tok.</td>
+                </tr>
+                <tr>
+                  <td data-i18n="econ.sum.r6">6. Cost WITHOUT Caching (100% full rate)</td>
+                  <td id="sum-nat-nocache-usd">$0.0000</td>
+                  <td id="sum-en-nocache-usd">$0.0000</td>
+                  <td id="sum-diff-nocache-usd" class="econ-pos">+$0.0000 (0.0%)</td>
+                </tr>
+                <tr>
+                  <td data-i18n="econ.sum.r7">7. Savings from Prompt Caching Discount</td>
+                  <td id="sum-nat-cache-disc">-$0.0000</td>
+                  <td id="sum-en-cache-disc">-$0.0000</td>
+                  <td id="sum-diff-cache-info" class="muted">Cache discount</td>
+                </tr>
+                <tr>
+                  <td data-i18n="econ.sum.r8">8. Translator Overhead Cost</td>
+                  <td>$0.0000</td>
+                  <td id="sum-en-trans-usd">$0.0000</td>
+                  <td id="sum-diff-trans-usd">$0.0000</td>
+                </tr>
+                <tr class="econ-summary-final-row">
+                  <td><strong data-i18n="econ.sum.r9">FINAL TOTAL WITH CACHE</strong></td>
+                  <td><strong id="sum-nat-final-usd">$0.0000</strong></td>
+                  <td><strong id="sum-en-final-usd" class="econ-pos">$0.0000</strong></td>
+                  <td><strong id="sum-diff-final-usd" class="econ-pos">+$0.0000 (0.0%)</strong></td>
+                </tr>
+                <tr class="econ-summary-subfinal-row">
+                  <td data-i18n="econ.sum.r10">Combined Benefit (Translation + Cache) vs Uncached Native Baseline</td>
+                  <td id="sum-raw-baseline">$0.0000 (uncached baseline)</td>
+                  <td id="sum-raw-actual">$0.0000 (actual with translation &amp; cache)</td>
+                  <td><strong id="sum-raw-total-benefit" class="econ-pos">+$0.0000 (0.0%)</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Per-Model Tariff Configurator & Table -->
+        <div class="editor translator-card econ-card">
+          <div class="editor-heading">
+            <h2 data-i18n="econ.rates.title">Codex Per-Model Tariff Configuration (Input · Output · Caching per 1M Tokens)</h2>
+            <div class="heading-actions">
+              <span id="econ-sync-status" class="badge">OpenAI Pricing (4h auto-sync)</span>
+              <button id="econ-sync-pricing" class="secondary" data-i18n="econ.rates.syncLive">↻ Sync OpenAI Prices</button>
+              <button id="econ-export-csv" class="secondary" data-i18n="econ.rates.exportCsv">⬇ Export CSV</button>
+              <button id="econ-export-json" class="secondary" data-i18n="econ.rates.exportJson">⬇ Export JSON</button>
+              <button id="econ-reset-stats" class="quiet" data-i18n="econ.rates.resetSession">Reset Session Stats</button>
+            </div>
+          </div>
+          <p class="muted" data-i18n="econ.rates.desc" style="margin-top:0;margin-bottom:12px;">
+            Select any Codex model (`gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-sol`, `gpt-6-luna`, `gpt-5.6-*`) or custom preset to configure its input ($/1M), cached input ($/1M or discount %), and output ($/1M) token rates. New rates apply from today without altering historical past days.
+          </p>
+          <div class="econ-controls-grid">
+            <label><span data-i18n="econ.rates.modelSelect">Model for configuration / calculation</span>
+              <select id="econ-preset-select" aria-label="Model tariff" data-i18n-aria-label="econ.rates.modelSelect"></select>
+            </label>
+            <label><span data-i18n="econ.rates.priceIn">Input ($ per 1M, P_in)</span>
+              <input id="econ-price-in" type="number" step="0.01" min="0" value="2.5">
+            </label>
+            <label><span data-i18n="econ.rates.priceCached">Cached Input ($ per 1M, P_cached)</span>
+              <input id="econ-price-cached" type="number" step="0.01" min="0" value="0.25">
+            </label>
+            <label><span data-i18n="econ.rates.cacheDisc">Cache Discount (% off Input)</span>
+              <input id="econ-cache-discount" type="number" step="1" min="0" max="100" value="90">
+            </label>
+            <label><span data-i18n="econ.rates.priceWrite30m">30m Cache Write ($ per 1M)</span>
+              <input id="econ-price-write-30m" type="number" step="0.01" min="0" value="3.125">
+            </label>
+            <label><span data-i18n="econ.rates.priceWrite12h">12h Cache Write ($ per 1M)</span>
+              <input id="econ-price-write-12h" type="number" step="0.01" min="0" value="6.25">
+            </label>
+            <label><span data-i18n="econ.rates.priceOut">Output ($ per 1M, P_out)</span>
+              <input id="econ-price-out" type="number" step="0.01" min="0" value="10">
+            </label>
+            <label><span data-i18n="econ.rates.priceTrans">Translator ($ per 1M, C_trans)</span>
+              <input id="econ-price-trans" type="number" step="0.01" min="0" value="0">
+            </label>
+          </div>
+          <div class="button-row" style="margin-top:12px;">
+            <button id="econ-save-model-rate" class="primary" data-i18n="econ.rates.saveBtn">💾 Save Rate for Selected Model</button>
+            <button id="econ-reset-model-rate" class="secondary" data-i18n="econ.rates.resetBtn">↺ Reset Model Rate to Default</button>
+          </div>
+
+          <div class="econ-table-wrap" style="margin-top:14px;max-height:240px;">
+            <table class="econ-table">
+              <thead>
+                <tr>
+                  <th data-i18n="econ.rates.thModel">Codex Model</th>
+                  <th data-i18n="econ.rates.thDesc">Description / Context</th>
+                  <th data-i18n="econ.rates.thIn">Input ($ / 1M)</th>
+                  <th data-i18n="econ.rates.thCache">Caching ($ / 1M · Discount %)</th>
+                  <th data-i18n="econ.rates.thOut">Output ($ / 1M)</th>
+                  <th data-i18n="econ.rates.thStatus">Tariff Status</th>
+                  <th data-i18n="econ.rates.thAction">Action</th>
+                </tr>
+              </thead>
+              <tbody id="econ-models-rate-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="editor translator-card econ-card">
+          <div class="editor-heading">
+            <h2 data-i18n="econ.turns.title">Turn-by-Turn Request Log</h2>
+            <span id="econ-daily-summary" class="badge">Session active</span>
+          </div>
+          <div class="econ-table-wrap">
+            <table class="econ-table">
+              <thead>
+                <tr>
+                  <th data-i18n="econ.turns.thStep">Step # · Model · Effort</th>
+                  <th data-i18n="econ.turns.thIn">In (Cached / New EN)</th>
+                  <th data-i18n="econ.turns.thOut">Out (EN / Virtual)</th>
+                  <th data-i18n="econ.ratio">K_ratio</th>
+                  <th data-i18n="econ.turns.thSavedTok">Tokens Saved</th>
+                  <th data-i18n="econ.turns.thPrice">Request Cost ($)</th>
+                  <th data-i18n="econ.turns.thBenefit">Benefit ($)</th>
+                </tr>
+              </thead>
+              <tbody id="econ-turns-tbody">
+                <tr>
+                  <td colspan="7" class="empty" data-i18n="econ.turns.empty">No requests recorded in the current session yet. Send a message to the Agent while the translator is enabled.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="connections" class="panel hidden">
+      <div class="toolbar">
+        <button id="add-connection" class="primary" data-i18n="conn.addBtn">＋ Add Translator API Provider</button>
+        <span class="muted" data-i18n="conn.toolbarHint">Connect an external API that will translate messages (your base ChatGPT/Codex connection remains untouched)</span>
+      </div>
+      <div class="split">
+        <div id="connection-list" class="item-list"></div>
+        <div id="connection-editor" class="editor">
+          <div class="editor-heading">
+            <h2 id="connection-title" data-i18n="conn.editorTitle">Translator Connection</h2>
+            <div class="heading-actions">
+              <button id="make-primary-connection" class="secondary" data-i18n="conn.makePrimary">Make Primary</button>
+              <button id="remove-connection" class="quiet" data-i18n="conn.remove">Remove</button>
+            </div>
+          </div>
+          <label><span data-i18n="conn.nameLabel">Connection Name</span>
+            <input id="connection-name" data-i18n-placeholder="conn.namePlaceholder" autocomplete="off" placeholder="e.g., Translator API Provider">
+          </label>
+          <div class="fields">
+            <label><span data-i18n="conn.kindLabel">Translator API Protocol</span>
+              <select id="connection-kind">
+                <option value="omniroute" data-i18n="conn.protocol.omniroute">OmniRoute Gateway (/v1/responses)</option>
+                <option value="responses" data-i18n="conn.protocol.responses">OpenAI Responses API (/v1/responses)</option>
+                <option value="chat_completions" data-i18n="conn.protocol.chat_completions">OpenAI Chat Completions (/v1/chat/completions)</option>
+                <option value="anthropic" data-i18n="conn.protocol.anthropic">Anthropic Messages (/v1/messages)</option>
+              </select>
+            </label>
+          </div>
+          <label><span data-i18n="conn.urlLabel">Translator Server Base URL</span>
+            <input id="connection-url" autocomplete="off" placeholder="https://api.openai.com/v1">
+          </label>
+          <label><span data-i18n="conn.keyLabel">API Key (encrypted via Windows DPAPI)</span>
+            <input id="connection-key" type="password" autocomplete="new-password" placeholder="Enter API key" data-i18n-placeholder="conn.keyPlaceholder">
+          </label>
+          <div class="button-row">
+            <button id="refresh-connection" class="primary" data-i18n="conn.refreshBtn">Load / Refresh Models</button>
+            <button id="check-connection" class="secondary" data-i18n="conn.checkBtn">Check Model Status (Online/Offline)</button>
+          </div>
+          <p id="connection-hint" class="muted"></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="models" class="panel hidden">
+      <div class="toolbar">
+        <input id="model-search" data-i18n-placeholder="models.searchPlaceholder" type="search" placeholder="Search translator models by ID or name…" aria-label="Search models" data-i18n-aria-label="models.searchPlaceholder">
+        <select id="model-provider" aria-label="Connection filter" data-i18n-aria-label="a11y.connectionFilter">
+          <option value="" data-i18n="models.allConnections">All connections</option>
+        </select>
+        <button id="refresh-all" class="secondary" data-i18n="models.refreshAll">Refresh All Catalogs</button>
+      </div>
+      <div class="model-filters">
+        <label><input type="checkbox" id="filter-online" checked><span data-i18n="models.online">Online</span></label>
+        <label><input type="checkbox" id="filter-offline" checked><span data-i18n="models.offline">Offline</span></label>
+        <label><input type="checkbox" id="filter-unchecked" checked><span data-i18n="models.unchecked">Unchecked</span></label>
+        <select id="check-batch" aria-label="Batch size" data-i18n-aria-label="a11y.batchSize">
+          <option value="10" data-i18n="models.batch10">Batch of 10</option>
+          <option value="20" data-i18n="models.batch20">Batch of 20</option>
+        </select>
+        <button id="check-all" class="secondary" data-i18n="models.checkAll">Check All Models</button>
+        <button id="cancel-check" class="quiet hidden" data-i18n="models.stop">Stop</button>
+        <span class="filter-spacer"></span>
+        <button id="enable-filtered" class="secondary" data-i18n="models.enableVisible">Enable Visible</button>
+        <button id="disable-filtered" class="quiet" data-i18n="models.disableVisible">Disable Visible</button>
+      </div>
+      <p id="check-progress" class="muted"></p>
+      <div class="table-head">
+        <span data-i18n="models.thConn">Connection</span>
+        <span data-i18n="models.thModel">Model (Context · Efforts)</span>
+        <span data-i18n="models.thStatus">Status</span>
+        <span data-i18n="models.thAction">Action</span>
+        <span data-i18n="models.thEnabled">Enabled</span>
+      </div>
+      <div id="model-list" class="model-list"></div>
+      <div id="model-summary" class="muted list-summary"></div>
+    </section>
+
+    <footer data-i18n="footer.text">
+      The translator intercepts requests on the fly without replacing your base ChatGPT / Codex model. Turning ON / OFF takes effect immediately.
+    </footer>
+    <div id="notice" role="alert" class="hidden"></div>
+  </main>
+  <script src="/renderer.js"></script>
+</body>
+</html>

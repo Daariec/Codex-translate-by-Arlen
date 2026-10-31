@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "codex-translate": {
+      "command": "node",
+      "args": [
+        "./mcp-server.mjs"
+      ],
+      "cwd": ".",
+      "enabled": true,
+      "env_vars": [
+        "CODEX_HOME",
+        "LOCALAPPDATA",
+        "APPDATA",
+        "USERPROFILE",
+        "HOME",
+        "XDG_DATA_HOME",
+        "XDG_CONFIG_HOME",
+        "TMPDIR",
+        "DISPLAY",
+        "WAYLAND_DISPLAY",
+        "DBUS_SESSION_BUS_ADDRESS",
+        "SystemRoot",
+        "PATH"
+      ],
+      "startup_timeout_sec": 30,
+      "tool_timeout_sec": 60
+    }
+  }
+}

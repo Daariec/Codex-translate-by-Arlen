@@ -1,0 +1,55 @@
+{
+  "name": "codex-translate",
+  "version": "1.0.0",
+  "description": "Cross-platform bidirectional User <-> English <-> Agent structural translator, local loopback proxy gateway, and Token Economics & Prompt Caching analytics suite for official OpenAI ChatGPT / Codex Desktop and Codex CLI on Windows, macOS, and Linux.",
+  "author": {
+    "name": "Codex Translate"
+  },
+  "license": "MIT",
+  "keywords": [
+    "translator",
+    "chatgpt",
+    "codex",
+    "english",
+    "token-saver",
+    "token-economics",
+    "prompt-caching",
+    "windows",
+    "macos",
+    "linux"
+  ],
+  "skills": "./skills/",
+  "hooks": "./hooks.json",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Codex Translate",
+    "shortDescription": "Bidirectional User <-> Agent Translator & Token Economics (ON/OFF)",
+    "longDescription": "Intercepts user prompts in official ChatGPT and Codex modes, translates them into English via your external translator API while protecting code, paths, URLs, and tool calls, forwards them to your base Agent to save BPE tokens and extend usage limits, translates Agent replies back to your language, and tracks real-time BPE token & prompt-cache economics.",
+    "developerName": "Codex Translate",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Check current Codex Translate status (ON/OFF) and active translator model",
+      "Turn ON the User <-> Agent translator",
+      "Turn OFF the User <-> Agent translator"
+    ],
+    "brandColor": "#6366F1",
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/icon.svg",
+    "logoDark": "./assets/icon.svg",
+    "screenshots": [
+      "./assets/screenshots/01-translator-control.png",
+      "./assets/screenshots/02-interception-bridge.png",
+      "./assets/screenshots/03-token-economics-overview.png",
+      "./assets/screenshots/04-scenarios-and-balance.png",
+      "./assets/screenshots/05-model-tariffs.png",
+      "./assets/screenshots/06-turn-request-log.png",
+      "./assets/screenshots/07-api-providers.png",
+      "./assets/screenshots/08-translator-models.png"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "codex-translate",
+  "version": "1.0.0",
+  "description": "Cross-platform bidirectional User <-> English <-> Agent structural translator, local loopback proxy gateway, and Token Economics & Prompt Caching analytics suite for OpenAI ChatGPT / Codex Desktop and Codex CLI on Windows, macOS, and Linux.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "setup": "node cli.mjs help"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "gpt-tokenizer": "^4.1.0"
+  }
+}

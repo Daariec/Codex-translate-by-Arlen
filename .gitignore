@@ -1,0 +1,16 @@
+node_modules/
+*.log
+*.tmp
+*.err
+*.dpapi
+credentials/
+backups/
+panel-window-profile/
+state.json
+model-state.json
+provider-ui-state.json
+routing.json
+gateway.json
+token-economics.json
+translator-state.json
+translator.json

@@ -1,0 +1,20 @@
+{
+  "name": "codex-translate-local",
+  "interface": {
+    "displayName": "Codex Translate for ChatGPT & Codex"
+  },
+  "plugins": [
+    {
+      "name": "codex-translate",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "INSTALLED_BY_DEFAULT",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
