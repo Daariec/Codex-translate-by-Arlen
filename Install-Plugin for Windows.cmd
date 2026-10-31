@@ -78,7 +78,7 @@ if not exist "%SCRIPT_DIR%node_modules\gpt-tokenizer" (
 
 if "%ISOLATED_MODE%"=="0" (
     set "CODEX_EXE="
-    for /f "delims=" %%C in ('"%NODE_EXE%" -e "import('./lib.mjs').then(m => console.log(m.resolveCodexExe()))" 2^>nul') do (
+    for /f "delims=" %%C in ('"%NODE_EXE%" -e "import('./lib.mjs').then(function(m){console.log(m.resolveCodexExe())})" 2^>nul') do (
         if not defined CODEX_EXE set "CODEX_EXE=%%C"
     )
     if defined CODEX_EXE (

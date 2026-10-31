@@ -72,7 +72,7 @@ if not defined NODE_EXE (
 if "%ISOLATED_MODE%"=="0" (
     powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$ErrorActionPreference='SilentlyContinue'; Get-CimInstance Win32_Process | Where-Object { ($_.Name -eq 'powershell.exe' -and $_.CommandLine -match '[\\/](?:Tray|Panel|Switch)\.ps1\b') -or ($_.Name -eq 'node.exe' -and $_.CommandLine -match '[\\/]gateway\.mjs\"?\s+--daemon\b') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }" >nul 2>nul
     set "CODEX_EXE="
-    for /f "delims=" %%C in ('"%NODE_EXE%" -e "import(process.argv[1]).then(m => console.log(m.resolveCodexExe()))" "file:///%SCRIPT_DIR:\=/%lib.mjs" 2^>nul') do (
+    for /f "delims=" %%C in ('"%NODE_EXE%" -e "import(process.argv[1]).then(function(m){console.log(m.resolveCodexExe())})" "file:///%SCRIPT_DIR:\=/%lib.mjs" 2^>nul') do (
         if not defined CODEX_EXE set "CODEX_EXE=%%C"
     )
     if defined CODEX_EXE (
