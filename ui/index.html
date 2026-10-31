@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Codex Translate — Translator Control Panel</title>
+  <title>Codex Translate v1.0.0 — Translator Control Panel</title>
   <link rel="icon" type="image/svg+xml" href="/icon.svg">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <aside>
-    <div class="brand"><span class="mark">⇄</span> Codex Translate</div>
+    <div class="brand"><span class="mark">⇄</span><span>Codex Translate</span><span id="brand-version" class="badge version-badge">v1.0.0</span></div>
     <div class="ui-lang-box">
       <span class="section-label" data-i18n="side.uiLangLabel" style="margin:0 0 6px 0;">Interface Language</span>
       <div class="ui-lang-tabs" role="group" aria-label="Interface Language" data-i18n-aria-label="side.uiLangLabel">
@@ -57,7 +57,7 @@
             <h2 data-i18n="dash.settingsHeader">1. Translator Control (ON / OFF) &amp; Settings</h2>
             <span id="translator-status-badge" class="badge">Loading…</span>
           </div>
-          <p class="muted" data-i18n="dash.subtitle" style="margin-top:0;margin-bottom:14px;">
+          <p class="muted" data-i18n="dash.cardDesc" style="margin-top:0;margin-bottom:14px;">
             When the translator is <strong>ON</strong>, all user messages in <strong>ChatGPT</strong> and <strong>Codex</strong> modes are intercepted, translated into English, and sent to the Agent. When the Agent replies, the translator intercepts the response and translates it back into your language.
           </p>
 

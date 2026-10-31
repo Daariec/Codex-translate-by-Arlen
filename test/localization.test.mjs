@@ -151,24 +151,55 @@ test('application progress and errors translate without changing provider-suppli
 
 test('populated model economics translates cost labels while preserving model IDs', () => {
   const r = renderer();
-  const pricing = { presetId: 'model-alpha', priceInPerMillion: 2, priceCachedPerMillion: 0.2, priceOutPerMillion: 8 };
+  const pricing = {
+    presetId: 'model-alpha',
+    priceInPerMillion: 2,
+    priceCachedPerMillion: 0.2,
+    priceCacheWrite30mPerMillion: 2.5,
+    priceCacheWrite12hPerMillion: 5.0,
+    priceOutPerMillion: 8
+  };
   const kpi = { turnsCount: 1, tokensSavedTotal: 100, netSavedUsd: 0.1, netSavingsPercent: 10 };
   const snapshot = {
     connections: [], models: [], languages: [], translator: {},
     economics: {
       activeCodexModel: 'model-alpha', pricing, kpi,
+      codexReasoningEffort: 'medium',
+      codexServiceTier: 'priority',
       periods: { all: { kpi, byModel: [{ model: 'model-alpha', pricing, turnsCount: 1 }] } },
-      modelRates: [{ id: 'model-alpha', name: 'model-alpha', ...pricing }],
-      recentTurns: [{ step: 1, model: 'model-alpha', reasoningEffort: 'low', at: '2026-01-01T12:00:00Z' }]
+      modelRates: [
+        { id: 'model-alpha', name: 'model-alpha', description: 'Наша последняя и самая совершенная модель', contextWindow: 500000, ...pricing },
+        { id: 'codex-auto-review', name: 'Codex Auto Review', description: 'Automatic approval review model for Codex.', contextWindow: 272000, ...pricing }
+      ],
+      recentTurns: [{ step: 1, model: 'model-alpha', reasoningEffort: 'medium', inCacheWrite: 100, cacheWriteWindow: '30m', at: '2026-01-01T12:00:00Z' }]
     }
   };
   r.run(`state = ${JSON.stringify(snapshot)};`);
   for (const lang of ['ru', 'zh', 'en']) {
     r.run(`applyUiLanguage('${lang}')`);
+    assert.equal(r.document.getElementById('brand-version').textContent, 'v1.0.0');
+    assert.match(r.document.title, /v1\.0\.0/);
     const table = r.document.getElementById('econ-by-model-tbody').textContent;
+    const ratesTable = r.document.getElementById('econ-models-rate-tbody').textContent;
+    const turnsTable = r.document.getElementById('econ-turns-tbody').textContent;
     assert.ok(table.includes('model-alpha'));
     assert.match(table, /\$2\.00/);
     assert.match(r.document.getElementById('econ-active-tariff-pill').textContent, /\$2\.00/);
+    if (lang === 'en') {
+      assert.match(ratesTable, /Our latest and most advanced model/);
+      assert.doesNotMatch(ratesTable, /Наша последняя/);
+      assert.match(turnsTable, /\[Medium\]/);
+    } else if (lang === 'ru') {
+      assert.match(ratesTable, /Наша последняя и самая совершенная модель/);
+      assert.match(ratesTable, /Модель автоматической проверки разрешений для Codex\./);
+      assert.match(turnsTable, /\[Средний\]/);
+      assert.match(turnsTable, /30м/);
+    } else if (lang === 'zh') {
+      assert.match(ratesTable, /我们最新、最先进的模型/);
+      assert.match(ratesTable, /Codex 自动审批评估模型。/);
+      assert.match(turnsTable, /\[中\]/);
+      assert.match(turnsTable, /30分钟/);
+    }
     if (lang !== 'en') {
       const prose = table + r.document.getElementById('econ-kpi-cache-sub').textContent + r.document.getElementById('econ-active-tariff-pill').textContent;
       assert.doesNotMatch(prose, /\b(?:In|Input|Cache|Out|Hit|input tokens)\b/);

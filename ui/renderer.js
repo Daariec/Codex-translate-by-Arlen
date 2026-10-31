@@ -22,7 +22,7 @@ let probeResult = null;
 
 const I18N = {
   en: {
-    'page.title': 'Codex Translate — Control Panel',
+    'page.title': 'Codex Translate v1.0.0 — Control Panel',
     'side.uiLangLabel': 'Interface Language',
     'side.statusLabel': 'Translator Status',
     'side.turnOn': 'Turn ON',
@@ -34,6 +34,7 @@ const I18N = {
     'side.restartDesktop': '↻ Restart ChatGPT / Codex',
     'dash.title': 'Intermediary Translator (User ↔ Agent)',
     'dash.subtitle': 'Intercepts and translates your prompts into English for the Agent and translates the Agent responses back into your language to save tokens and usage limits.',
+    'dash.cardDesc': 'When the translator is ON, all user messages in ChatGPT and Codex modes are intercepted, translated into English, and sent to the Agent. When the Agent replies, the translator intercepts the response and translates it back into your language.',
     'econ.title': 'Token Economics & Prompt Caching',
     'econ.subtitle': 'Actual vs. virtual BPE tokenization costs, Prompt Caching efficiency, and net savings in tokens and USD.',
     'conn.title': 'Translator API Providers',
@@ -230,7 +231,7 @@ const I18N = {
     'econ.zeroTokens': '0 tok. ($0.0000)'
   },
   ru: {
-    'page.title': 'Codex Translate — Панель управления',
+    'page.title': 'Codex Translate v1.0.0 — Панель управления',
     'side.uiLangLabel': 'Язык интерфейса',
     'side.statusLabel': 'Статус переводчика',
     'side.turnOn': 'Включить',
@@ -242,6 +243,7 @@ const I18N = {
     'side.restartDesktop': '↻ Перезапустить ChatGPT / Codex',
     'dash.title': 'Переводчик между пользователем и агентом',
     'dash.subtitle': 'Перехват и перевод ваших запросов на английский для Агента и перевод ответов Агента обратно на ваш язык для экономии токенов и лимитов.',
+    'dash.cardDesc': 'Когда переводчик включён (ВКЛ), все сообщения пользователя в режимах ChatGPT и Codex перехватываются, переводятся на английский и отправляются Агенту. Когда Агент отвечает, переводчик перехватывает ответ и переводит его обратно на ваш язык.',
     'econ.title': 'Экономика токенов и кэширование запросов',
     'econ.subtitle': 'Фактические и расчётные затраты на токены, эффективность кэширования запросов и чистая экономия в токенах и долларах.',
     'conn.title': 'API-провайдеры переводчика',
@@ -425,9 +427,9 @@ const I18N = {
     'conn.editorTitle': 'Подключение переводчика',
     'conn.keyPlaceholder': 'Введите API-ключ',
     'conn.protocol.omniroute': 'Шлюз OmniRoute (/v1/responses)',
-    'conn.protocol.responses': 'OpenAI Responses API (/v1/responses)',
-    'conn.protocol.chat_completions': 'OpenAI Chat Completions (/v1/chat/completions)',
-    'conn.protocol.anthropic': 'Anthropic Messages (/v1/messages)',
+    'conn.protocol.responses': 'Ответы OpenAI · Responses API (/v1/responses)',
+    'conn.protocol.chat_completions': 'Чат OpenAI · Chat Completions (/v1/chat/completions)',
+    'conn.protocol.anthropic': 'Сообщения Anthropic · Messages API (/v1/messages)',
     'a11y.period': 'Период статистики',
     'a11y.connectionFilter': 'Фильтр подключений',
     'a11y.batchSize': 'Моделей в группе проверки',
@@ -438,7 +440,7 @@ const I18N = {
     'econ.zeroTokens': '0 ток. ($0.0000)'
   },
   zh: {
-    'page.title': 'Codex Translate — 控制面板',
+    'page.title': 'Codex Translate v1.0.0 — 控制面板',
     'side.uiLangLabel': '界面语言',
     'side.statusLabel': '翻译器状态',
     'side.turnOn': '开启',
@@ -450,6 +452,7 @@ const I18N = {
     'side.restartDesktop': '↻ 重启 ChatGPT / Codex',
     'dash.title': '用户与智能体之间的双向翻译',
     'dash.subtitle': '拦截并将您的提示词翻译为英文发送给 智能体，再将 智能体 的回复翻译回您的母语，从而节省词元与配额限制。',
+    'dash.cardDesc': '当翻译器开启（ON）时，ChatGPT 和 Codex 模式下的所有用户消息都会被拦截、翻译为英文并发送给智能体。当智能体回复时，翻译器会拦截响应并将其翻译回您的语言。',
     'econ.title': '词元成本与提示缓存',
     'econ.subtitle': '比较实际与估算的词元费用，查看提示缓存效率以及词元和美元的净节省。',
     'conn.title': '翻译器 API 提供商',
@@ -578,8 +581,8 @@ const I18N = {
     'econ.rates.priceIn': '输入（美元/百万词元，P_in）',
     'econ.rates.priceCached': '缓存输入（美元/百万词元，P_cached）',
     'econ.rates.cacheDisc': '缓存折扣 (% 减免)',
-    'econ.rates.priceWrite30m': '30m 缓存写入（美元/百万词元）',
-    'econ.rates.priceWrite12h': '12h 缓存写入（美元/百万词元）',
+    'econ.rates.priceWrite30m': '30分钟缓存写入（美元/百万词元）',
+    'econ.rates.priceWrite12h': '12小时缓存写入（美元/百万词元）',
     'econ.rates.priceOut': '输出（美元/百万词元，P_out）',
     'econ.rates.priceTrans': '翻译服务（美元/百万词元，C_trans）',
     'econ.rates.saveBtn': '💾 保存所选模型费率',
@@ -633,9 +636,9 @@ const I18N = {
     'conn.editorTitle': '翻译服务连接',
     'conn.keyPlaceholder': '输入 API 密钥',
     'conn.protocol.omniroute': 'OmniRoute 网关 (/v1/responses)',
-    'conn.protocol.responses': 'OpenAI Responses API (/v1/responses)',
-    'conn.protocol.chat_completions': 'OpenAI Chat Completions (/v1/chat/completions)',
-    'conn.protocol.anthropic': 'Anthropic Messages (/v1/messages)',
+    'conn.protocol.responses': 'OpenAI 响应接口 · Responses API (/v1/responses)',
+    'conn.protocol.chat_completions': 'OpenAI 聊天补全 · Chat Completions (/v1/chat/completions)',
+    'conn.protocol.anthropic': 'Anthropic 消息接口 · Messages API (/v1/messages)',
     'a11y.period': '统计周期',
     'a11y.connectionFilter': '筛选连接',
     'a11y.batchSize': '每批检测的模型数',
@@ -662,7 +665,13 @@ function uiLocale() {
 }
 
 function kindLabel(kind) {
-  return kind === 'omniroute' ? L('OmniRoute gateway', 'Шлюз OmniRoute', 'OmniRoute 网关') : kinds[kind] || kind;
+  const map = {
+    omniroute: L('OmniRoute gateway', 'Шлюз OmniRoute', 'OmniRoute 网关'),
+    responses: L('OpenAI Responses', 'Ответы OpenAI (Responses)', 'OpenAI 响应 (Responses)'),
+    chat_completions: L('OpenAI Chat Completions', 'Чат OpenAI (Chat Completions)', 'OpenAI 聊天补全 (Chat Completions)'),
+    anthropic: L('Anthropic Messages', 'Сообщения Anthropic (Messages)', 'Anthropic 消息 (Messages)')
+  };
+  return map[kind] || kinds[kind] || kind;
 }
 
 // Translate application-owned status text; provider messages and user content stay intact.
@@ -680,6 +689,9 @@ function localizeMessage(value) {
     ['Invalid connection ID.', 'Некорректный ID подключения.', '连接 ID 无效。'],
     ['Enter the server base URL.', 'Укажите Base URL сервера.', '请输入服务器的基础 URL。'],
     ['Cannot load /v1/models. Check the base URL and network.', 'Не удалось подключиться к /v1/models. Проверьте Base URL и сеть.', '无法加载 /v1/models。请检查基础 URL 和网络连接。'],
+    ['Cannot reach server /models. Check the server URL, network and TLS.', 'Не удалось подключиться к /models. Проверьте URL сервера, сеть и TLS.', '无法访问服务器的 /models。请检查服务器 URL、网络和 TLS。'],
+    ['GET /v1/models did not return { data: [...] }.', 'Запрос GET /v1/models не вернул { data: [...] }.', 'GET /v1/models 未返回 { data: [...] }。'],
+    ['This server has no text models eligible for translation.', 'На этом сервере нет текстовых моделей, подходящих для перевода.', '此服务器没有可用于翻译的文本模型。'],
     ['A model check is already running.', 'Проверка уже выполняется.', '模型检测正在进行。'],
     ['Load the model catalog first.', 'Сначала загрузите список моделей.', '请先加载模型列表。'],
     ['Invalid reasoning effort.', 'Некорректный уровень effort.', '推理强度无效。'],
@@ -688,6 +700,8 @@ function localizeMessage(value) {
     ['The model is not in the selected connection catalog.', 'Модель не найдена в каталоге выбранного подключения.', '所选连接的目录中没有该模型。'],
     ['Add and configure a translator API provider first.', 'Сначала добавьте и настройте API провайдер для переводчика.', '请先添加并配置翻译 API 提供商。'],
     ['Select a translator model first.', 'Сначала выберите модель переводчика.', '请先选择翻译模型。'],
+    ['Specify a model ID to save the rate.', 'Укажите ID модели для сохранения тарифа.', '请指定要保存费率的模型 ID。'],
+    ['Specify a model ID to reset the rate.', 'Укажите ID модели для сброса тарифа.', '请指定要重置费率的模型 ID。'],
     ['Streaming response received', 'Получен потоковый ответ', '已收到流式响应'],
     ['Empty response stream', 'Пустой SSE поток', '响应事件流为空'],
     ['Text response received', 'Получен текстовый ответ', '已收到文本响应'],
@@ -696,6 +710,23 @@ function localizeMessage(value) {
     ['No response within 30 seconds, or connection error', 'Нет ответа за 30 секунд или ошибка соединения', '30 秒内未收到响应，或连接发生错误'],
     ['Connection removed', 'Подключение удалено', '连接已删除'],
     ['Translator provider', 'Провайдер переводчика', '翻译 API 提供商'],
+    ['Translator API', 'API переводчика', '翻译 API'],
+    ['Translator API Provider', 'API-провайдер переводчика', '翻译 API 提供商'],
+    ['Our latest and most advanced model', 'Наша последняя и самая совершенная модель', '我们最新、最先进的模型'],
+    ['Codex Auto Review', 'Автопроверка Codex', 'Codex 自动审查'],
+    ['Automatic approval review model for Codex.', 'Модель автоматической проверки разрешений для Codex.', 'Codex 自动审批评估模型。'],
+    ['Latest workhorse model for coding and everyday work.', 'Новейшая основная модель для программирования и повседневных задач.', '适用于编程与日常工作的最新主力模型。'],
+    ['Latest workhorse model', 'Новейшая основная модель', '最新主力模型'],
+    ['Frontier intelligence for the most demanding work.', 'Передовой интеллект для самых сложных задач.', '适用于高难度任务的前沿智能模型。'],
+    ['Frontier intelligence', 'Передовой интеллект', '前沿智能模型'],
+    ['GPT-6.1 Terra Codex model.', 'Модель Codex GPT-6.1 Terra.', 'GPT-6.1 Terra Codex 模型。'],
+    ['Previous generation workhorse model.', 'Основная модель предыдущего поколения.', '上一代主力模型。'],
+    ['Fast and affordable agentic coding model.', 'Быстрая и доступная агентная модель для программирования.', '快速且高性价比的智能体编程模型。'],
+    ['Fast and affordable model for easier tasks.', 'Быстрая и доступная модель для простых задач.', '适用于轻量任务的快速高性价比模型。'],
+    ['Fast and affordable', 'Быстрая и доступная модель', '快速且高性价比'],
+    ['Older generation workhorse model.', 'Основная модель прошлого поколения.', '早期版本主力模型。'],
+    ['Older balanced model for straightforward work.', 'Сбалансированная модель прошлого поколения для типовых задач.', '适用于常规任务的早期均衡模型。'],
+    ['Older fast and efficient model.', 'Быстрая и эффективная модель прошлого поколения.', '早期快速高效模型。'],
     ['Remote servers require HTTPS.', 'Для удалённых серверов требуется HTTPS.', '远程服务器必须使用 HTTPS。'],
     ['Use an HTTP(S) server URL without credentials, query or fragment.', 'Укажите HTTP(S) URL сервера без логина, пароля, параметров и фрагмента.', '请使用不含登录信息、查询参数或片段的 HTTP(S) 服务器 URL。'],
     ['Invalid URL', 'Некорректный URL', 'URL 无效'],
@@ -749,6 +780,28 @@ function formatEffortLabel(effort) {
   return map[clean] || effort;
 }
 
+function formatServiceTierLabel(tier) {
+  if (!tier) return '';
+  const clean = String(tier).trim().toLowerCase();
+  const map = {
+    default: L('Default', 'По умолчанию', '默认'),
+    standard: L('Standard', 'Стандартный', '标准'),
+    priority: L('Priority', 'Приоритетный', '优先'),
+    fast: L('Fast', 'Быстрый', '快速'),
+    flex: L('Flex', 'Гибкий', '灵活'),
+    batch: L('Batch', 'Пакетный', '批处理'),
+    ultrafast: L('Ultrafast', 'Сверхбыстрый', '极速'),
+    auto: L('Auto', 'Авто', '自动')
+  };
+  return map[clean] || tier;
+}
+
+function formatCacheWindowLabel(win) {
+  const clean = String(win || '30m').trim().toLowerCase();
+  if (clean === '12h') return L('12h', '12ч', '12小时');
+  if (clean === '30m') return L('30m', '30м', '30分钟');
+  return win;
+}
 function applyUiLanguage(lang) {
   currentUiLang = ['en', 'ru', 'zh'].includes(lang) ? lang : 'en';
   document.documentElement.lang = currentUiLang;
@@ -939,6 +992,7 @@ async function flush() {
 
 function renderSidebarTranslatorBox() {
   if (!state) return;
+  if ($('brand-version')) $('brand-version').textContent = `v${state.version && typeof state.version === 'string' ? state.version : '1.0.0'}`;
   const t = state.translator || {};
   const hasProvider = t.hasProvider === true || !!(state.connections?.length && state.connections.find(c => c.id === (t.connectionId || state.selectedId))?.baseUrl);
   const hasModel = t.hasModel === true || !!(hasProvider && t.model);
@@ -1365,7 +1419,7 @@ function renderEconomics() {
     const effortStr = econ.codexReasoningEffort
       ? ` · ${L('Effort:', 'Усилие:', '推理强度:')} ${formatEffortLabel(econ.codexReasoningEffort)}`
       : '';
-    const tierStr = econ.codexServiceTier && econ.codexServiceTier !== 'default' ? ` · ${L('service tier:', 'уровень обслуживания:', '服务等级：')} ${econ.codexServiceTier}` : '';
+    const tierStr = econ.codexServiceTier && econ.codexServiceTier !== 'default' ? ` · ${L('service tier:', 'уровень обслуживания:', '服务等级：')} ${formatServiceTierLabel(econ.codexServiceTier)}` : '';
     $('econ-active-codex-meta').textContent =
       econ.autoDetectModel !== false
         ? `${L('Auto from ChatGPT / Codex', 'Авто из ChatGPT / Codex', '自动同步自 ChatGPT / Codex')}${effortStr}${tierStr}`
@@ -1376,11 +1430,11 @@ function renderEconomics() {
     const disc = Number(pricing.cacheDiscountPercent ?? 90).toFixed(0);
     const w30 =
       pricing.priceCacheWrite30mPerMillion !== undefined && pricing.priceCacheWrite30mPerMillion !== null
-        ? ` · 30m: $${Number(pricing.priceCacheWrite30mPerMillion).toFixed(2)}`
+        ? ` · ${formatCacheWindowLabel('30m')}: $${Number(pricing.priceCacheWrite30mPerMillion).toFixed(2)}`
         : '';
     const w12 =
       pricing.priceCacheWrite12hPerMillion !== undefined && pricing.priceCacheWrite12hPerMillion !== null
-        ? ` · 12h: $${Number(pricing.priceCacheWrite12hPerMillion).toFixed(2)}`
+        ? ` · ${formatCacheWindowLabel('12h')}: $${Number(pricing.priceCacheWrite12hPerMillion).toFixed(2)}`
         : '';
     $('econ-active-tariff-pill').textContent =
       `${L('Input:', 'Вход:', '输入：')} $${Number(pricing.priceInPerMillion ?? 0).toFixed(2)} · ${L('Cache:', 'Кэш:', '缓存：')} $${Number(pricing.priceCachedPerMillion ?? 0).toFixed(3)} (-${disc}%)${w30}${w12} · ${L('Output:', 'Выход:', '输出：')} $${Number(pricing.priceOutPerMillion ?? 0).toFixed(2)} / ${L('1M tokens', '1 млн токенов', '百万词元')}`;
@@ -1391,7 +1445,7 @@ function renderEconomics() {
       $('econ-sync-status').textContent = L(
         `✓ OpenAI prices synced (${syncTime} · 4h auto)`,
         `✓ Тарифы OpenAI обновлены (${syncTime} · авто 4ч)`,
-        `✓ OpenAI 价格已同步 (${syncTime} · 4h 自动)`
+        `✓ OpenAI 价格已同步 (${syncTime} · 每 4 小时自动)`
       );
     } else {
       $('econ-sync-status').textContent = L('OpenAI Pricing (4h auto-sync)', 'Тарифы OpenAI (авто-обновление 4ч)', 'OpenAI 价格 (每 4 小时自动同步)');
@@ -1794,12 +1848,12 @@ function renderEconomics() {
         element('strong', m.id),
         isCurrentCodex ? element('span', ` ★ ${L('Active in Codex', 'Активна в Codex', 'Codex 当前活动')}`, 'econ-pos') : element('span', '')
       );
-      const ctxStr = m.contextWindow ? `${Math.round(m.contextWindow / 1000)}K` : '';
-      const tdDesc = element('td', [m.name !== m.id ? localizeMessage(m.name) : '', m.description || '', ctxStr].filter(Boolean).join(' · ') || L('Codex model', 'Модель Codex', 'Codex 模型'));
+      const ctxStr = m.contextWindow ? formatContext(m.contextWindow) : '';
+      const tdDesc = element('td', [m.name !== m.id ? localizeMessage(m.name) : '', m.description ? localizeMessage(m.description) : '', ctxStr].filter(Boolean).join(' · ') || L('Codex model', 'Модель Codex', 'Codex 模型'));
       const tdIn = element('td', `$${Number(m.priceInPerMillion).toFixed(3)} / ${L('1M tokens', '1 млн токенов', '百万词元')}`);
       const writeMeta =
         m.priceCacheWrite30mPerMillion != null
-          ? ` · 30m: $${Number(m.priceCacheWrite30mPerMillion).toFixed(2)} / 12h: $${Number(m.priceCacheWrite12hPerMillion ?? m.priceInPerMillion * 2.5).toFixed(2)}`
+          ? ` · ${formatCacheWindowLabel('30m')}: $${Number(m.priceCacheWrite30mPerMillion).toFixed(2)} / ${formatCacheWindowLabel('12h')}: $${Number(m.priceCacheWrite12hPerMillion ?? m.priceInPerMillion * 2.5).toFixed(2)}`
           : '';
       const tdCache = element(
         'td',
@@ -1846,8 +1900,8 @@ function renderEconomics() {
       for (const t of turns) {
         const tr = element('tr');
         const timeStr = t.at ? new Date(t.at).toLocaleTimeString(uiLocale()) : '';
-        const effBadge = t.reasoningEffort ? ` [${t.reasoningEffort}]` : '';
-        const winBadge = t.inCacheWrite > 0 || t.cacheWriteWindow === '12h' ? ` · ${t.cacheWriteWindow || '30m'}` : '';
+        const effBadge = t.reasoningEffort ? ` [${formatEffortLabel(t.reasoningEffort)}]` : '';
+        const winBadge = t.inCacheWrite > 0 || t.cacheWriteWindow === '12h' ? ` · ${formatCacheWindowLabel(t.cacheWriteWindow || '30m')}` : '';
         const tdStep = element('td', `#${t.step} · ${t.model || 'codex'}${effBadge} (${timeStr})`);
         const tdIn = element(
           'td',
@@ -2092,7 +2146,6 @@ function reload(full = false) {
       uiStateApplied = true;
       const u = state.uiState || {};
       const initialLang = ['en', 'ru', 'zh'].includes(u.uiLang) ? u.uiLang : 'en';
-      applyUiLanguage(initialLang);
       if (typeof u.filterOnline === 'boolean') $('filter-online').checked = u.filterOnline;
       if (typeof u.filterOffline === 'boolean') $('filter-offline').checked = u.filterOffline;
       if (typeof u.filterUnchecked === 'boolean') $('filter-unchecked').checked = u.filterUnchecked;
@@ -2103,6 +2156,7 @@ function reload(full = false) {
       if (u.connectionId && state.connections.some(c => c.id === u.connectionId)) connectionId = u.connectionId;
       if (['today', 'week', 'month', 'all'].includes(u.econPeriod)) selectedEconPeriod = u.econPeriod;
       if (['dashboard', 'economics', 'connections', 'models'].includes(u.tab)) activateTab(u.tab);
+      applyUiLanguage(initialLang);
     }
 
     renderSidebarTranslatorBox();
@@ -2111,6 +2165,7 @@ function reload(full = false) {
     renderConnections();
     renderModels();
     renderJob();
+    updateConnectionLabels();
     if (state?.checkJob?.running) {
       setTimeout(() => {
         if (!editing && !saving && !timers.size) reload(false);

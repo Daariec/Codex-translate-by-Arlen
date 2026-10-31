@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⇄ Codex Translate (`codex-translate`)
+# ⇄ Codex Translate Plugin
 
 ### Bidirectional Native Language <-> English Gateway & Token Economics Suite for OpenAI ChatGPT / Codex
 
@@ -13,7 +13,7 @@
 
 **Write prompts in your native language while your Coding Agent reasons in pure English. Cut BPE token consumption by 1.4x to 2.5x, keep a 95% Prompt Cache hit rate, and track every saved token and dollar in real time.**
 
-[How It Works](#how-it-works) · [Real-World Savings](#real-world-token--cost-savings) · [Interface & Functions](#interface--core-functions) · [Quick Installation](#quick-installation) · [Full Guide (EN / RU / ZH)](INSTALLATION.md)
+[How It Works](#how-it-works) · [Real-World Savings](#real-world-token--cost-savings) · [Interface & Functions](#interface--core-functions) · [Quick Installation](#quick-installation) · [Security & Privacy](#security--privacy) · [Full Guide (EN / RU / ZH)](INSTALLATION.md)
 
 </div>
 
@@ -109,7 +109,7 @@ The Control Panel supports instant switching between **English**, **Русски
 ### Step 1: Clone the Repository
 
 ```bash
-git clone <YOUR_GITHUB_REPO_URL> codex-translate
+git clone https://github.com/Daariec/Codex-translate-by-Arlen.git codex-translate
 cd codex-translate
 ```
 
@@ -160,6 +160,15 @@ npm test
 ```
 
 For detailed multilingual setup, updates, and troubleshooting instructions, see **[INSTALLATION.md](INSTALLATION.md)**, **[SETUP.md](SETUP.md)**, and **[VALIDATION.md](VALIDATION.md)**.
+
+---
+
+## Security & Privacy
+
+- **100% Local Loopback Execution:** The gateway runs strictly on `127.0.0.1:24131` on your machine. Prompts and responses are sent directly between your computer, your configured translator API endpoint, and the official OpenAI / ChatGPT servers without any intermediate third-party servers.
+- **OS-Scoped API Key Encryption:** Translator API keys are encrypted locally on disk via **Windows DPAPI** (`Credential.ps1`) on Windows and authenticated **AES-256-GCM** (`0600` file permissions) on macOS and Linux.
+- **Kept Outside the Repository:** All credentials (`credentials/*.dpapi`), provider settings (`state.json`), and token economics logs (`token-economics.json`) are stored in your OS user profile directory (`%LOCALAPPDATA%` on Windows, `~/Library/Application Support` on macOS, `~/.local/share` on Linux) and are excluded via `.gitignore`.
+- **Transparent Native Launcher:** `CodexTranslate.exe` is a 10 KB Windows launcher compiled directly from the included open-source [Launcher.cs](Launcher.cs) file.
 
 ---
 

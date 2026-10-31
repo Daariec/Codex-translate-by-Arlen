@@ -814,7 +814,7 @@ function normalizeModelRate(id, raw = {}, fallbackMeta = {}) {
   return {
     id: cleanId,
     name: raw.name || fallbackMeta.name || base.name,
-    description: raw.description ?? fallbackMeta.description ?? base.description ?? '',
+    description: raw.description || fallbackMeta.description || base.description || '',
     contextWindow: raw.contextWindow ?? fallbackMeta.contextWindow ?? null,
     maxContextWindow: raw.maxContextWindow ?? fallbackMeta.maxContextWindow ?? null,
     encoding: resolveOpenAiEncoding(cleanId, raw.encoding || base.encoding),
