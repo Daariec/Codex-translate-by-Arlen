@@ -7,6 +7,7 @@ Add-Type -AssemblyName System.Drawing
 $taskNode = (Get-Command node.exe -ErrorAction Stop).Source
 $taskCli = Join-Path $PSScriptRoot 'cli.mjs'
 . (Join-Path $PSScriptRoot 'ui\native-language.ps1')
+try { Set-Location -LiteralPath ([IO.Path]::GetTempPath()) } catch {}
 Initialize-UiLanguage $DataDirectory
 
 function Format-ContextTokens([int64]$tokens) {

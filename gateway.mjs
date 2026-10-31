@@ -1,6 +1,7 @@
 import http from 'node:http';
 import zlib from 'node:zlib';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { Readable } from 'node:stream';
@@ -1030,6 +1031,33 @@ export async function createGatewayServer({
       return { started };
     }
 
+    if (action === 'shutdownGateway') {
+      let restored = null;
+      if (payload?.restoreBaseRoute !== false) {
+        try {
+          restored = switchRoute({ route: 'base', dataDir, codexHome, force: true });
+        } catch {}
+      }
+      try {
+        if (fs.existsSync(gatewayInfoFile)) fs.unlinkSync(gatewayInfoFile);
+      } catch {}
+      syncMsixLocalCache(dataDir);
+      checkJob?.controller.abort();
+      checkQueue.clear();
+      economics.stopAutoPricingSync();
+      if (payload?.exitProcess !== false && process.argv.includes('--daemon')) {
+        const shutdownTimer = setTimeout(() => {
+          try {
+            server.closeAllConnections?.();
+            server.close(() => process.exit(0));
+          } catch {}
+          setTimeout(() => process.exit(0), 150).unref();
+        }, 60);
+        shutdownTimer.unref?.();
+      }
+      return { shuttingDown: true, routing: restored };
+    }
+
     throw Error(`Неизвестное действие: ${action}`);
   }
 
@@ -1654,13 +1682,15 @@ export async function ensureGatewayDaemon({
   try {
   const { spawn } = await import('node:child_process');
   const scriptPath = fileURLToPath(import.meta.url);
+  const daemonCwd = os.tmpdir();
   let spawnedViaWmi = false;
   if (process.platform === 'win32') {
     try {
       const cmdLine = `"${process.execPath}" "${scriptPath}" --daemon --data-dir "${dataDir}" --codex-home "${codexHome}" --port ${port}`;
       const psQuote = s => `'${String(s).replace(/'/g, "''")}'`;
-      const psCmd = `$si = New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly -Property @{ ShowWindow = [uint16]0 }; $r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = ${psQuote(cmdLine)}; CurrentDirectory = ${psQuote(root)}; ProcessStartupInformation = $si }; if ($r.ReturnValue -eq 0) { exit 0 } else { exit 1 }`;
+      const psCmd = `$si = New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly -Property @{ ShowWindow = [uint16]0 }; $r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = ${psQuote(cmdLine)}; CurrentDirectory = ${psQuote(daemonCwd)}; ProcessStartupInformation = $si }; if ($r.ReturnValue -eq 0) { exit 0 } else { exit 1 }`;
       const wmiRes = spawnSync(psPath(), ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', psCmd], {
+        cwd: daemonCwd,
         windowsHide: true,
         timeout: 8000
       });
@@ -1672,6 +1702,7 @@ export async function ensureGatewayDaemon({
       process.execPath,
       [scriptPath, '--daemon', '--data-dir', dataDir, '--codex-home', codexHome, '--port', String(port)],
       {
+        cwd: daemonCwd,
         detached: true,
         windowsHide: true,
         stdio: 'ignore'
@@ -1711,6 +1742,9 @@ function isExecutedDirectly(argv1, metaUrl) {
 }
 
 if (isExecutedDirectly(process.argv[1], import.meta.url) && process.argv.includes('--daemon')) {
+  try {
+    process.chdir(os.tmpdir());
+  } catch {}
   const args = process.argv.slice(2);
   let dataDir;
   let codexHome;

@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { spawnSync, spawn } from 'node:child_process';
@@ -407,7 +408,12 @@ export function syncPluginCache(codexHome, pluginRoot, version = '1.0.0') {
       'Install-Plugin for MacOS.command',
       'Install-Plugin for MacOS.sh',
       'Install-Plugin for Linux.sh',
+      'Uninstall-Plugin for Windows.cmd',
+      'Uninstall-Plugin for MacOS.command',
+      'Uninstall-Plugin for MacOS.sh',
+      'Uninstall-Plugin for Linux.sh',
       'install-plugin.sh',
+      'uninstall-plugin.sh',
       'panel.sh',
       'switch.sh',
       'setup.sh',
@@ -459,12 +465,61 @@ export function ensurePluginEnabledInCodex({ codexHome = defaultCodexHome(), plu
   syncPluginCache(codexHome, pluginRoot, version);
 }
 
+export function uninstallPluginFromCodex({
+  codexHome = defaultCodexHome(),
+  dataDir = null
+} = {}) {
+  let routing = null;
+  if (dataDir && codexHome && fs.existsSync(codexHome)) {
+    try {
+      routing = switchRoute({ route: 'base', dataDir, codexHome, force: true });
+    } catch {}
+  }
+  if (codexHome) {
+    const configPath = path.join(codexHome, 'config.toml');
+    if (fs.existsSync(configPath)) {
+      let cfgText = fs.readFileSync(configPath, 'utf8').replace(/\0+/g, '');
+      cfgText = cfgText
+        .replace(/\r?\n*\[marketplaces\.codex-translate-local\][\s\S]*?(?=\r?\n\[|$)/g, '')
+        .replace(/\r?\n*\[plugins\."codex-translate@codex-translate-local"\][\s\S]*?(?=\r?\n\[|$)/g, '');
+      atomicWrite(configPath, cfgText.trimEnd() + '\n');
+    }
+    const cacheRoot = path.join(codexHome, 'plugins', 'cache', 'codex-translate-local');
+    if (fs.existsSync(cacheRoot)) {
+      try {
+        fs.rmSync(cacheRoot, { recursive: true, force: true });
+      } catch {}
+    }
+  }
+  if (process.platform === 'win32' && (!codexHome || path.resolve(codexHome) === path.resolve(defaultCodexHome()))) {
+    try {
+      spawnSync(
+        psPath(),
+        [
+          '-NoProfile',
+          '-NonInteractive',
+          '-ExecutionPolicy',
+          'Bypass',
+          '-Command',
+          "Remove-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'CodexTranslateTray' -ErrorAction SilentlyContinue"
+        ],
+        { windowsHide: true, timeout: 5000 }
+      );
+    } catch {}
+  }
+  return {
+    uninstalled: true,
+    routing: routing || (dataDir && codexHome ? routingStatus(dataDir, codexHome) : null)
+  };
+}
+
 function spawnDetachedWindowsProcess(commandLine, cwd) {
   if (process.platform !== 'win32') return false;
   try {
     const psQuote = s => `'${String(s).replace(/'/g, "''")}'`;
     const psCmd = `$si = New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly -Property @{ ShowWindow = [uint16]0 }; $r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = ${psQuote(commandLine)}; CurrentDirectory = ${psQuote(cwd)}; ProcessStartupInformation = $si }; if ($r.ReturnValue -eq 0) { exit 0 } else { exit 1 }`;
     const wmiRes = spawnSync(psPath(), ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', psCmd], {
+      cwd: os.tmpdir(),
       windowsHide: true,
       timeout: 8000
     });
@@ -478,12 +533,14 @@ function ensurePanelMinimizedToTray(pluginRoot, { dataDir = null, codexHome = nu
   try {
     const panelScript = path.join(pluginRoot, 'Panel.ps1');
     if (!fs.existsSync(panelScript)) return false;
+    const safeCwd = os.tmpdir();
     const args = ['-NoProfile', '-Sta', '-WindowStyle', 'Hidden', '-ExecutionPolicy', 'Bypass', '-File', panelScript, '-MinimizeToTray'];
     if (dataDir) args.push('-DataDirectory', dataDir);
     if (codexHome) args.push('-CodexHome', codexHome);
     const cmdLine = `"${psPath()}" ` + args.map(a => (a.includes(' ') ? `"${a}"` : a)).join(' ');
-    if (spawnDetachedWindowsProcess(cmdLine, pluginRoot)) return true;
+    if (spawnDetachedWindowsProcess(cmdLine, safeCwd)) return true;
     const child = spawn(psPath(), args, {
+      cwd: safeCwd,
       detached: true,
       windowsHide: true,
       stdio: 'ignore'
@@ -500,13 +557,15 @@ export function ensureTrayRunning(pluginRoot, { minimizePanelToTray = false, dat
   try {
     const trayScript = path.join(pluginRoot, 'Tray.ps1');
     if (!fs.existsSync(trayScript)) return false;
+    const safeCwd = os.tmpdir();
     const args = ['-NoProfile', '-Sta', '-WindowStyle', 'Hidden', '-ExecutionPolicy', 'Bypass', '-File', trayScript];
     if (minimizePanelToTray) args.push('-LaunchMinimizedPanel');
     if (dataDir) args.push('-DataDirectory', dataDir);
     if (codexHome) args.push('-CodexHome', codexHome);
     const cmdLine = `"${psPath()}" ` + args.map(a => (a.includes(' ') ? `"${a}"` : a)).join(' ');
-    if (!spawnDetachedWindowsProcess(cmdLine, pluginRoot)) {
+    if (!spawnDetachedWindowsProcess(cmdLine, safeCwd)) {
       const child = spawn(psPath(), args, {
+        cwd: safeCwd,
         detached: true,
         windowsHide: true,
         stdio: 'ignore'

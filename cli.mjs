@@ -8,6 +8,7 @@ import {
   switchRoute,
   syncPluginCache,
   ensurePluginEnabledInCodex,
+  uninstallPluginFromCodex,
   restartCodexDesktop,
   ensureTrayRunning,
   openControlPanel
@@ -101,6 +102,8 @@ function help() {
       `  panel                         Open Codex Translate Control Panel\n` +
       `  tray                          Start Windows System Tray icon (CT)\n` +
       `  install                       Install plugin and activate translation bridge\n` +
+      `  shutdown                      Stop background gateway and restore direct connection\n` +
+      `  uninstall                     Remove plugin from Codex and stop all background processes\n` +
       `  restore                       Restore original config.toml without interception\n`
   );
 }
@@ -293,6 +296,64 @@ export async function main(argv = process.argv.slice(2)) {
       ...(gw ? { gateway: gw } : {}),
       desktopRestart
     };
+    console.log(opt.json ? JSON.stringify(payload) : JSON.stringify(payload, null, 2));
+    return;
+  }
+
+  if (command === 'shutdown' || command === 'uninstall') {
+    const gwInfo = jsonRead(path.join(dataDir, 'gateway.json'), null);
+    const candidatePorts = [...new Set([gwInfo?.port, DEFAULT_GATEWAY_PORT].filter(Boolean))];
+    let gatewayStopped = false;
+    for (const p of candidatePorts) {
+      try {
+        const token = gwInfo?.adminToken || '';
+        const res = await fetch(`http://127.0.0.1:${p}/api/action`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            ...(token ? { 'x-codex-translate-token': token } : {})
+          },
+          body: JSON.stringify({
+            action: 'shutdownGateway',
+            payload: { restoreBaseRoute: true, exitProcess: true }
+          }),
+          signal: AbortSignal.timeout(3000)
+        });
+        if (res.ok) {
+          gatewayStopped = true;
+          break;
+        }
+      } catch {}
+    }
+    if (gwInfo?.pid) {
+      try {
+        process.kill(Number(gwInfo.pid));
+        gatewayStopped = true;
+      } catch {}
+    }
+    try {
+      if (fs.existsSync(path.join(dataDir, 'gateway.json'))) {
+        fs.unlinkSync(path.join(dataDir, 'gateway.json'));
+      }
+    } catch {}
+
+    if (command === 'uninstall') {
+      state.desiredRoute = 'base';
+      save();
+      saveTranslatorSettings(dataDir, { enabled: false });
+      const uninst = uninstallPluginFromCodex({ codexHome, dataDir });
+      const payload = { ok: true, uninstalled: true, gatewayStopped, ...uninst };
+      console.log(opt.json ? JSON.stringify(payload) : JSON.stringify(payload, null, 2));
+      return;
+    }
+
+    let status = routingStatus(dataDir, codexHome);
+    if (status.interceptActive) {
+      try {
+        status = switchRoute({ route: 'base', dataDir, codexHome, force: true });
+      } catch {}
+    }
+    const payload = { ok: true, shutdown: true, gatewayStopped, routing: status };
     console.log(opt.json ? JSON.stringify(payload) : JSON.stringify(payload, null, 2));
     return;
   }

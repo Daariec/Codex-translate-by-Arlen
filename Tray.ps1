@@ -45,6 +45,36 @@ public static class CodexTranslateWin32 {
         return list;
     }
 
+    public static List<IntPtr> FindSwitchWindows() {
+        var list = new List<IntPtr>();
+        EnumWindows((hWnd, lParam) => {
+            var sb = new StringBuilder(512);
+            GetWindowText(hWnd, sb, sb.Capacity);
+            string title = sb.ToString();
+            if (title.IndexOf("Codex Translate", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                (title.IndexOf("User ↔ Agent", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                 title.IndexOf("Переводчик пользователь ↔ агент", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                 title.IndexOf("用户 ↔ 智能体翻译", StringComparison.OrdinalIgnoreCase) >= 0)) {
+                list.Add(hWnd);
+            }
+            return true;
+        }, IntPtr.Zero);
+        return list;
+    }
+
+    public static int CloseAllPluginWindows() {
+        int closed = 0;
+        foreach (var hWnd in FindPanelWindows()) {
+            PostMessage(hWnd, 0x0010 /* WM_CLOSE */, IntPtr.Zero, IntPtr.Zero);
+            closed++;
+        }
+        foreach (var hWnd in FindSwitchWindows()) {
+            PostMessage(hWnd, 0x0010 /* WM_CLOSE */, IntPtr.Zero, IntPtr.Zero);
+            closed++;
+        }
+        return closed;
+    }
+
     public static void HideIfMinimized() {
         var wins = FindPanelWindows();
         foreach (var hWnd in wins) {
@@ -89,6 +119,7 @@ $taskNode = if ($nodeCmd) { $nodeCmd.Source } elseif (Test-Path 'C:\Program File
 $taskCli = Join-Path $PSScriptRoot 'cli.mjs'
 $taskPanel = Join-Path $PSScriptRoot 'Panel.ps1'
 $taskSwitch = Join-Path $PSScriptRoot 'Switch.ps1'
+try { Set-Location -LiteralPath ([IO.Path]::GetTempPath()) } catch {}
 
 function Invoke-TrayCli([string[]]$Arguments) {
     if ($DataDirectory) { $Arguments += @('--data-dir', $DataDirectory) }
@@ -316,8 +347,31 @@ $timer.Start()
 
 $itemExit.add_Click({
     $timer.Stop()
+    try {
+        [void][CodexTranslateWin32]::CloseAllPluginWindows()
+    } catch {}
+    try {
+        $body = @{ action = 'shutdownGateway'; payload = @{ restoreBaseRoute = $true; exitProcess = $true } } | ConvertTo-Json -Compress
+        $null = Invoke-RestMethod -Uri "$gatewayUrl/api/action" -Method Post -Headers (Get-ActionHeaders) -ContentType 'application/json' -Body $body -TimeoutSec 3
+    } catch {}
+    try {
+        $null = Invoke-TrayCli @('shutdown', '--json')
+    } catch {}
+    try {
+        $otherProcs = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+            $_.ProcessId -ne $PID -and (
+                ($_.Name -eq 'node.exe' -and $_.CommandLine -match '[\\/]gateway\.mjs"?\s+--daemon\b') -or
+                ($_.Name -eq 'powershell.exe' -and $_.CommandLine -match '[\\/](?:Panel|Switch)\.ps1\b')
+            )
+        }
+        foreach ($proc in $otherProcs) {
+            Stop-Process -Id $proc.ProcessId -Force -ErrorAction SilentlyContinue
+        }
+    } catch {}
     $notifyIcon.Visible = $false
     $notifyIcon.Dispose()
+    try { $mutex.ReleaseMutex() } catch {}
+    try { $mutex.Dispose() } catch {}
     [Windows.Forms.Application]::Exit()
 })
 

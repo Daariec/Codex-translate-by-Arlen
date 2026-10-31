@@ -123,6 +123,8 @@ cd codex-translate
 
 The installer automatically installs `gpt-tokenizer` if needed, registers and enables the plugin in `~/.codex/config.toml`, backs up your original configuration, sets `openai_base_url = "http://127.0.0.1:24131/v1"`, starts the background gateway (`127.0.0.1:24131`), and (on Windows) starts the **`CT`** system tray icon.
 
+To completely uninstall the plugin and stop all background processes, run **`Uninstall-Plugin for Windows.cmd`** (Windows), **`Uninstall-Plugin for MacOS.command`** / **`Uninstall-Plugin for MacOS.sh`** (macOS), **`Uninstall-Plugin for Linux.sh`** (Linux), or `node cli.mjs uninstall`.
+
 ### Step 3: Add a Translator Provider & Turn ON
 1. Open the Control Panel (`CodexTranslate.exe` or `.\Panel.cmd` on Windows; `./panel.sh` or `node cli.mjs panel` on macOS/Linux).
 2. Open **API Providers -> + Add Translator API Provider**, enter your translator server URL and API key, and click **Load / Refresh Models**.
@@ -154,6 +156,12 @@ node cli.mjs status
 
 # Restore direct connection in ~/.codex/config.toml:
 node cli.mjs restore
+
+# Stop background gateway and restore direct connection:
+node cli.mjs shutdown
+
+# Completely uninstall plugin from Codex and remove plugin cache:
+node cli.mjs uninstall
 
 # Run automated verification (43 tests):
 npm test

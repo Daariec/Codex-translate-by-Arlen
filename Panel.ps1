@@ -94,6 +94,7 @@ $nodeCmd = Get-Command node.exe -ErrorAction SilentlyContinue
 $taskNode = if ($nodeCmd) { $nodeCmd.Source } elseif (Test-Path 'C:\Program Files\nodejs\node.exe') { 'C:\Program Files\nodejs\node.exe' } else { throw 'Node.js (node.exe) was not found.' }
 $taskCli = Join-Path $PSScriptRoot 'cli.mjs'
 $taskTray = Join-Path $PSScriptRoot 'Tray.ps1'
+try { Set-Location -LiteralPath ([IO.Path]::GetTempPath()) } catch {}
 $taskArgs = @('panel-url', '--json')
 if ($DataDirectory) { $taskArgs += @('--data-dir', $DataDirectory) }
 if ($CodexHome) { $taskArgs += @('--codex-home', $CodexHome) }

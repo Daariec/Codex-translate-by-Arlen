@@ -48,7 +48,11 @@ test('Switch.ps1 -Check and CodexTranslate.exe --check validate UI and ON/OFF to
     'Install-Plugin for MacOS.sh',
     'Install-Plugin for MacOS.command',
     'Install-Plugin for Linux.sh',
+    'Uninstall-Plugin for MacOS.sh',
+    'Uninstall-Plugin for MacOS.command',
+    'Uninstall-Plugin for Linux.sh',
     'install-plugin.sh',
+    'uninstall-plugin.sh',
     'panel.sh',
     'switch.sh',
     'setup.sh'
@@ -59,7 +63,7 @@ test('Switch.ps1 -Check and CodexTranslate.exe --check validate UI and ON/OFF to
     assert.match(content, /^#!\/usr\/bin\/env bash/);
     assert.ok(!content.includes('\r\n'), `${shFile} must use LF line endings for Linux/macOS compatibility`);
   }
-  for (const cmdFile of ['Install-Plugin for Windows.cmd', 'Install-Plugin.cmd']) {
+  for (const cmdFile of ['Install-Plugin for Windows.cmd', 'Install-Plugin.cmd', 'Uninstall-Plugin for Windows.cmd']) {
     assert.ok(fs.existsSync(path.join(root, cmdFile)), `Missing Windows installer: ${cmdFile}`);
   }
 
@@ -166,6 +170,35 @@ test('Install-Plugin for Windows, Install-Plugin for MacOS, Install-Plugin for L
       assert.match(cfgText, /openai_base_url = "http:\/\/127\.0\.0\.1:24131\/v1"/);
       assert.match(cfgText, /model = "gpt-6\.1-sol"/);
       assert.ok(fs.existsSync(path.join(codexHome, 'plugins', 'cache', 'codex-translate-local', 'codex-translate', '1.0.0', 'plugin.json')));
+
+      // Verify cli.mjs shutdown restores base route while keeping desiredRoute = 'translate' for next session auto-start
+      const shutRes = spawnSync(
+        process.execPath,
+        [path.join(root, 'cli.mjs'), 'shutdown', '--json', '--data-dir', dataDir, '--codex-home', codexHome],
+        { encoding: 'utf8', windowsHide: true, timeout: 15000 }
+      );
+      assert.equal(shutRes.status, 0, shutRes.stderr);
+      const shutJson = JSON.parse(shutRes.stdout.trim());
+      assert.equal(shutJson.shutdown, true);
+      assert.equal(shutJson.routing.interceptActive, false);
+      const savedStateAfterShutdown = JSON.parse(fs.readFileSync(path.join(dataDir, 'state.json'), 'utf8'));
+      assert.equal(savedStateAfterShutdown.desiredRoute, 'translate');
+
+      // Verify cli.mjs uninstall removes plugin entries from config.toml and deletes plugin cache
+      const uninstRes = spawnSync(
+        process.execPath,
+        [path.join(root, 'cli.mjs'), 'uninstall', '--json', '--data-dir', dataDir, '--codex-home', codexHome],
+        { encoding: 'utf8', windowsHide: true, timeout: 15000 }
+      );
+      assert.equal(uninstRes.status, 0, uninstRes.stderr);
+      const uninstJson = JSON.parse(uninstRes.stdout.trim());
+      assert.equal(uninstJson.uninstalled, true);
+      const cfgAfterUninst = fs.readFileSync(path.join(codexHome, 'config.toml'), 'utf8');
+      assert.doesNotMatch(cfgAfterUninst, /\[marketplaces\.codex-translate-local\]/);
+      assert.doesNotMatch(cfgAfterUninst, /\[plugins\."codex-translate@codex-translate-local"\]/);
+      assert.doesNotMatch(cfgAfterUninst, /24131/);
+      assert.match(cfgAfterUninst, /model = "gpt-6\.1-sol"/);
+      assert.equal(fs.existsSync(path.join(codexHome, 'plugins', 'cache', 'codex-translate-local')), false);
     } finally {
       fs.rmSync(tmp, { recursive: true, force: true });
     }
